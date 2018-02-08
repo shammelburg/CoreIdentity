@@ -26,6 +26,10 @@ POST http://localhost:65048/api/manage/ChangePassword
 GET  http://localhost:65048/api/manage/EnableAuthenticator
 POST http://localhost:65048/api/manage/EnableAuthenticator
 POST http://localhost:65048/api/manage/GenerateRecoveryCodes
+POST http://localhost:65048/api/manage/ResetAuthenticator
+POST http://localhost:65048/api/manage/Disable2fa
+GET  http://localhost:65048/api/manage/TwoFactorAuthentication
+POST http://localhost:65048/api/manage/SetPassword
 
 Role
 GET  http://localhost:65048/api/role
