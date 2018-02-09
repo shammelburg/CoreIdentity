@@ -84,6 +84,14 @@ namespace WebApiCoreSecurity
                     };
                 });
 
+            services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            }));
+
+
             services.AddMvc();
         }
 
@@ -101,7 +109,9 @@ namespace WebApiCoreSecurity
             app.UseAuthentication();
 
             //https://github.com/shammelburg/CoreWeb/blob/master/CoreWeb/Middleware/ErrorHandlingMiddleware.cs
-            
+
+            app.UseCors("CorsPolicy");
+
             app.UseMvc();
         }
     }
