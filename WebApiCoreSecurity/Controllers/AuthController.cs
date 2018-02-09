@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
@@ -12,6 +14,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using WebApiCoreSecurity.Helper;
 using WebApiCoreSecurity.ViewModels;
 
 namespace WebApiCoreSecurity.Controllers
@@ -125,7 +128,7 @@ namespace WebApiCoreSecurity.Controllers
                 return BadRequest(ModelState);
 
             var user = await _userManager.FindByEmailAsync(model.Email);
-            if(user == null)
+            if (user == null)
                 return BadRequest("Could not continue with this request. (E1)");
 
             if (await _userManager.VerifyTwoFactorTokenAsync(user, "Authenticator", model.TwoFactorCode))
@@ -154,12 +157,15 @@ namespace WebApiCoreSecurity.Controllers
                 roleClaims.Add(new Claim("roles", roles[i]));
             }
 
+            string ipAddress = IpHelper.GetIpAddress();
+
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("uid", user.Id)
+                new Claim("uid", user.Id),
+                new Claim("ip", ipAddress)
             }
             .Union(userClaims)
             .Union(roleClaims);
