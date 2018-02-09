@@ -19,25 +19,19 @@ namespace WebApiCoreSecurity.Controllers
     public class ManageController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private IPasswordHasher<IdentityUser> _passwordHasher;
         private readonly UrlEncoder _urlEncoder;
 
         private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
 
         public ManageController(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
             RoleManager<IdentityRole> roleManager,
-            IPasswordHasher<IdentityUser> passwordHasher,
             UrlEncoder urlEncoder
             )
         {
             this._userManager = userManager;
             this._roleManager = roleManager;
-            this._signInManager = signInManager;
-            this._passwordHasher = passwordHasher;
             this._urlEncoder = urlEncoder;
         }
 

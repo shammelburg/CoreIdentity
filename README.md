@@ -4,11 +4,11 @@ Using ASP.NET Core Web API Identity With JWT and TFA Authenticator
 This is a work in progress project. 
 
 This ASP.NET Core 2.0 Web API uses Identity Tables and JWT to authenticate and authorize users as well as
-user, role and userRole management
+user, role and userRole management.
 
 I have got the authenticator working as well but the timing doesn't seem to reflect what on the Authenticator app.
 
-One issue to be worked on is the EmailConfirmationToken which is not being verified.
+* Added middleware to check for IP addresses, invalid IP request get a 403.
 
 This is being tested with Google Postman.
 
@@ -77,9 +77,3 @@ GET  http://localhost:65048/api/UserRoles/GetUserRoles?id=xxx
 DELETE http://localhost:65048/api/UserRoles/RemoveFromRole?id=352bf910-ea1a-455e-b4a0-f49e585c3eff
 
 POST http://localhost:65048/api/UserRoles/AddToRole
-
-
-
-
-
-
