@@ -9,6 +9,7 @@ user, role and userRole management.
 I have got the authenticator working as well but the timing doesn't seem to reflect what on the Authenticator app.
 
 * Added middleware to check for IP addresses, invalid IP request get a 403.
+* Need to find out the purpose of Recovery Codes when the TFA is enabled.
 
 This is being tested with Google Postman.
 
