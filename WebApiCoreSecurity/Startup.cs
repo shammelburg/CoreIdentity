@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using WebApiCoreSecurity.Middleware;
 
 namespace WebApiCoreSecurity
 {
@@ -94,8 +95,10 @@ namespace WebApiCoreSecurity
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseAuthentication();
+            app.UseWhiteListMiddleware(Configuration["AllowedIPs"]);
 
+            app.UseAuthentication();
+            
             app.UseMvc();
         }
     }
