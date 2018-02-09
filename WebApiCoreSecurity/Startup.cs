@@ -98,6 +98,8 @@ namespace WebApiCoreSecurity
             app.UseWhiteListMiddleware(Configuration["AllowedIPs"]);
 
             app.UseAuthentication();
+
+            //https://github.com/shammelburg/CoreWeb/blob/master/CoreWeb/Middleware/ErrorHandlingMiddleware.cs
             
             app.UseMvc();
         }
