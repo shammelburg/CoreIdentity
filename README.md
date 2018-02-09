@@ -12,41 +12,72 @@ One issue to be worked on is the EmailConfirmationToken which is not being verif
 
 This is being tested with Google Postman.
 
-Auth (Account)
+### Auth (Account)
+
 POST http://localhost:65048/api/auth/token
+
 POST http://localhost:65048/api/auth/2fa
+
 POST http://localhost:65048/api/auth/register
+
 GET  http://localhost:65048/api/auth/ConfirmEmail?Id=xxx&code=xxx
+
 POST http://localhost:65048/api/auth/ForgotPassword
+
 POST http://localhost:65048/api/auth/ResetPassword?code=xxx
 
-Manage
+
+### Manage
+
 POST http://localhost:65048/api/manage/SendVerificationEmail
+
 POST http://localhost:65048/api/manage/ChangePassword
+
 GET  http://localhost:65048/api/manage/EnableAuthenticator
+
 POST http://localhost:65048/api/manage/EnableAuthenticator
+
 POST http://localhost:65048/api/manage/GenerateRecoveryCodes
+
 POST http://localhost:65048/api/manage/ResetAuthenticator
+
 POST http://localhost:65048/api/manage/Disable2fa
+
 GET  http://localhost:65048/api/manage/TwoFactorAuthentication
+
 POST http://localhost:65048/api/manage/SetPassword
 
-Role
+
+### Role
+
 GET  http://localhost:65048/api/role
+
 POST http://localhost:65048/api/role/InsertUpdate
+
 DELETE http://localhost:65048/api/role?id=xxx
 
-User
+
+### User
+
 GET  http://localhost:65048/api/user
+
 GET  http://localhost:65048/api/user?id=xxx
+
 POST http://localhost:65048/api/user/InsertWithRole
+
 PUT  http://localhost:65048/api/user/Update
+
 DELETE http://localhost:65048/api/user?id=xxx
 
-UserRoles
+
+### UserRoles
+
 GET  http://localhost:65048/api/UserRoles/GetUserRoles?id=xxx
+
 DELETE http://localhost:65048/api/UserRoles/RemoveFromRole?id=352bf910-ea1a-455e-b4a0-f49e585c3eff
+
 POST http://localhost:65048/api/UserRoles/AddToRole
+
 
 
 
