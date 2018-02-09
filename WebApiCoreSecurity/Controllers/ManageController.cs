@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using WebApiCoreSecurity.Helper;
 using WebApiCoreSecurity.ViewModels;
 
 namespace WebApiCoreSecurity.Controllers
@@ -72,14 +73,15 @@ namespace WebApiCoreSecurity.Controllers
                 return BadRequest("Could not find user!");
 
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            //var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
+            var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
             //var email = user.Email;
             //await _emailSender.SendEmailConfirmationAsync(email, callbackUrl);
 
             return Ok(new
             {
                 Message = "Verification email sent. Please check your email.",
-                Code = code
+                // do not send back - testing only
+                CallbackUrl = callbackUrl
             });
         }
 
@@ -241,21 +243,6 @@ namespace WebApiCoreSecurity.Controllers
 
             return Ok(model);
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         private string FormatKey(string unformattedKey)
         {
