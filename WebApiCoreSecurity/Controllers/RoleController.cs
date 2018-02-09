@@ -34,7 +34,7 @@ namespace WebApiCoreSecurity.Controllers
         public async Task<IActionResult> Post(RoleViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest("Invalid model!");
+                return BadRequest(ModelState);
 
             bool isExist = !String.IsNullOrEmpty(model.Id);
 

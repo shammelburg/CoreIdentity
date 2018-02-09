@@ -40,7 +40,7 @@ namespace WebApiCoreSecurity.Controllers
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest("Model is invalid!");
+                return BadRequest(ModelState);
 
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
             if (user == null)
@@ -59,9 +59,6 @@ namespace WebApiCoreSecurity.Controllers
         [Route("SendVerificationEmail")]
         public async Task<IActionResult> SendVerificationEmail()
         {
-            if (!ModelState.IsValid)
-                return BadRequest("Model is invalid!");
-
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
             if (user == null)
                 return BadRequest("Could not find user!");
@@ -84,7 +81,7 @@ namespace WebApiCoreSecurity.Controllers
         public async Task<IActionResult> SetPassword(SetPasswordViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest("Model is invalid!");
+                return BadRequest(ModelState);
 
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
             if (user == null)

@@ -41,7 +41,7 @@ namespace WebApiCoreSecurity.Controllers
         public async Task<IActionResult> Register([FromBody]RegisterViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest("Model is invalid!");
+                return BadRequest(ModelState);
 
             var user = new IdentityUser { UserName = model.UserName, Email = model.Email };
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -179,7 +179,7 @@ namespace WebApiCoreSecurity.Controllers
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest("Could not continue with this request. (E2)");
+                return BadRequest(ModelState);
 
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
@@ -205,9 +205,7 @@ namespace WebApiCoreSecurity.Controllers
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
             if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
+                return BadRequest(ModelState);
 
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)

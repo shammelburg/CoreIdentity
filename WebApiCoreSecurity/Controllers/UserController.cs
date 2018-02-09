@@ -49,7 +49,7 @@ namespace WebApiCoreSecurity.Controllers
         public async Task<IActionResult> Post(UserViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest("Invalid model!");
+                return BadRequest(ModelState);
 
             IdentityUser user = new IdentityUser
             {
@@ -81,7 +81,7 @@ namespace WebApiCoreSecurity.Controllers
         public async Task<IActionResult> Put(string Id, EditUserViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest("Invalid model!");
+                return BadRequest(ModelState);
 
             IdentityUser user = await _userManager.FindByIdAsync(Id);
             if (user == null)

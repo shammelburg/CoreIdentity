@@ -41,7 +41,7 @@ namespace WebApiCoreSecurity.Controllers
         public async Task<IActionResult> Post(UserViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest("Invalid model!");
+                return BadRequest(ModelState);
 
             IdentityUser user = await _userManager.FindByIdAsync(model.Id);
             if (user == null)
@@ -65,7 +65,7 @@ namespace WebApiCoreSecurity.Controllers
         public async Task<IActionResult> Delete(string Id, UserViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest("Invalid model!");
+                return BadRequest(ModelState);
 
             IdentityUser user = await _userManager.FindByIdAsync(Id);
             if (user == null)
