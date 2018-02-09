@@ -58,7 +58,7 @@ namespace WebApiCoreSecurity
                 // Lockout settings
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
                 options.Lockout.MaxFailedAccessAttempts = 10;
-                options.Lockout.AllowedForNewUsers = true;
+                options.Lockout.AllowedForNewUsers = false;
 
                 // User settings
                 options.User.RequireUniqueEmail = true;
@@ -95,7 +95,8 @@ namespace WebApiCoreSecurity
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseWhiteListMiddleware(Configuration["AllowedIPs"]);
+            // Use WhiteList
+            // app.UseWhiteListMiddleware(Configuration["AllowedIPs"]);
 
             app.UseAuthentication();
 
