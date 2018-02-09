@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Security.Claims;
-using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
 using WebApiCoreSecurity.Helper;
 using WebApiCoreSecurity.ViewModels;
 
@@ -24,23 +20,17 @@ namespace WebApiCoreSecurity.Controllers
     public class AuthController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private IPasswordHasher<IdentityUser> _passwordHasher;
         private IConfiguration _configuration;
 
         public AuthController(
             UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
             RoleManager<IdentityRole> roleManager,
-            IPasswordHasher<IdentityUser> passwordHasher,
             IConfiguration configuration
             )
         {
             this._userManager = userManager;
             this._roleManager = roleManager;
-            this._signInManager = signInManager;
-            this._passwordHasher = passwordHasher;
             this._configuration = configuration;
         }
 
@@ -59,7 +49,7 @@ namespace WebApiCoreSecurity.Controllers
             if (result.Succeeded)
             {
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                //var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
+                var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
                 //await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
 
                 //await _signInManager.SignInAsync(user, isPersistent: false);
@@ -67,7 +57,8 @@ namespace WebApiCoreSecurity.Controllers
                 return Ok(new
                 {
                     Result = result,
-                    EmailConfirmationCode = code
+                    // do not send back - testing only
+                    CallbackUrl = callbackUrl
                 });
             }
 
@@ -92,6 +83,7 @@ namespace WebApiCoreSecurity.Controllers
             if (!user.EmailConfirmed)
                 return BadRequest("You must have a confirmed email to log in.");
 
+            // Used as user lock
             if (user.LockoutEnabled)
                 return BadRequest("This account has been locked.");
 
@@ -142,9 +134,7 @@ namespace WebApiCoreSecurity.Controllers
             }
             return BadRequest("Unable to verify Authenticator Code!");
         }
-
-
-
+        
         private async Task<JwtSecurityToken> CreateJwtToken(IdentityUser user)
         {
             var userClaims = await _userManager.GetClaimsAsync(user);
@@ -182,8 +172,7 @@ namespace WebApiCoreSecurity.Controllers
                 signingCredentials: signingCredentials);
             return jwtSecurityToken;
         }
-
-
+        
         [HttpPost]
         [AllowAnonymous]
         [Route("ForgotPassword")]
@@ -237,18 +226,18 @@ namespace WebApiCoreSecurity.Controllers
         [HttpGet]
         [AllowAnonymous]
         [Route("ConfirmEmail")]
-        public async Task<IActionResult> ConfirmEmail(string Id, string code)
+        public async Task<IActionResult> ConfirmEmail(string userId, string code)
         {
-            if (Id == null || code == null)
+            if (userId == null || code == null)
                 return BadRequest("Error retrieving information!");
 
-            var user = await _userManager.FindByIdAsync(Id);
+            var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
                 return BadRequest("Could not find user!");
 
             var result = await _userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded)
-                return Ok(result.Succeeded);
+                return Ok(result);
             return BadRequest(result);
         }
     }
