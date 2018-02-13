@@ -154,7 +154,7 @@ namespace WebApiCoreSecurity.Controllers
 
         [HttpPost]
         [Route("EnableAuthenticator")]
-        public async Task<IActionResult> EnableAuthenticator(EnableAuthenticatorViewModel model)
+        public async Task<IActionResult> EnableAuthenticator([FromBody]EnableAuthenticatorViewModel model)
         {
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
             if (user == null)

@@ -13,11 +13,6 @@ namespace WebApiCoreSecurity.ViewModels
         [DataType(DataType.Text)]
         [Display(Name = "Authenticator code")]
         public string TwoFactorCode { get; set; }
-
-        [Display(Name = "Remember this machine")]
-        public bool RememberMachine { get; set; }
-
-        public bool RememberMe { get; set; }
-        public string Email { get; set; }
+        public string UserName { get; set; }
     }
 }

@@ -103,7 +103,8 @@ namespace WebApiCoreSecurity.Controllers
                     return Ok(new
                     {
                         Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
-                        Expiration = jwtSecurityToken.ValidTo
+                        Expiration = jwtSecurityToken.ValidTo,
+                        EmailConfirmed = user.EmailConfirmed
                     });
                 }
             }
@@ -114,12 +115,12 @@ namespace WebApiCoreSecurity.Controllers
         [HttpPost("LoginWith2fa")]
         [AllowAnonymous]
         [Route("2fa")]
-        public async Task<IActionResult> LoginWith2fa(LoginWith2faViewModel model, string returnUrl = null)
+        public async Task<IActionResult> LoginWith2fa([FromBody]LoginWith2faViewModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _userManager.FindByNameAsync(model.UserName);
             if (user == null)
                 return BadRequest("Could not continue with this request. (E1)");
 
@@ -129,7 +130,8 @@ namespace WebApiCoreSecurity.Controllers
                 return Ok(new
                 {
                     Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
-                    Expiration = jwtSecurityToken.ValidTo
+                    Expiration = jwtSecurityToken.ValidTo,
+                    EmailConfirmed = user.EmailConfirmed
                 });
             }
             return BadRequest("Unable to verify Authenticator Code!");
