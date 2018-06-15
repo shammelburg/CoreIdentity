@@ -10,6 +10,7 @@ using WebApiCoreSecurity.ViewModels;
 
 namespace WebApiCoreSecurity.Controllers
 {
+    [Authorize]
     [Produces("application/json")]
     [Route("api/User")]
     public class UserController : Controller
@@ -27,14 +28,15 @@ namespace WebApiCoreSecurity.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
+        //[AllowAnonymous]
+        [Authorize(Roles = "Admin")]
         public IActionResult Get()
         {
             return Ok(_userManager.Users);
         }
 
         [HttpGet("{Id}")]
-        [AllowAnonymous]
+        //[AllowAnonymous]
         public IActionResult Get(string Id)
         {
             if (String.IsNullOrEmpty(Id))
@@ -44,9 +46,9 @@ namespace WebApiCoreSecurity.Controllers
         }
 
         [HttpPost("Post")]
-        [AllowAnonymous]
+        //[AllowAnonymous]
         [Route("InsertWithRole")]
-        public async Task<IActionResult> Post(UserViewModel model)
+        public async Task<IActionResult> Post([FromBody]UserViewModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -76,9 +78,9 @@ namespace WebApiCoreSecurity.Controllers
         }
 
         [HttpPost("Put")]
-        [AllowAnonymous]
+        //[AllowAnonymous]
         [Route("Update")]
-        public async Task<IActionResult> Put(string Id, EditUserViewModel model)
+        public async Task<IActionResult> Put(string Id, [FromBody]EditUserViewModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

@@ -31,7 +31,7 @@ namespace WebApiCoreSecurity.Controllers
         [HttpPost]
         [AllowAnonymous]
         [Route("InsertUpdate")]
-        public async Task<IActionResult> Post(RoleViewModel model)
+        public async Task<IActionResult> Post([FromBody]RoleViewModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

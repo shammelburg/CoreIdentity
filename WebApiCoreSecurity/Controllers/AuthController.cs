@@ -35,7 +35,7 @@ namespace WebApiCoreSecurity.Controllers
         }
 
 
-        //[AllowAnonymous]
+        [AllowAnonymous]
         [HttpPost]
         [Route("Register")]
         public async Task<IActionResult> Register([FromBody]RegisterViewModel model)
@@ -178,7 +178,7 @@ namespace WebApiCoreSecurity.Controllers
         [HttpPost]
         [AllowAnonymous]
         [Route("ForgotPassword")]
-        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        public async Task<IActionResult> ForgotPassword([FromBody]ForgotPasswordViewModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -204,7 +204,7 @@ namespace WebApiCoreSecurity.Controllers
         [AllowAnonymous]
         [Route("ResetPassword")]
         //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        public async Task<IActionResult> ResetPassword([FromBody]ResetPasswordViewModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

@@ -38,7 +38,7 @@ namespace WebApiCoreSecurity.Controllers
         [HttpPost("Post")]
         [AllowAnonymous]
         [Route("AddToRole")]
-        public async Task<IActionResult> Post(UserViewModel model)
+        public async Task<IActionResult> Post([FromBody]UserViewModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -62,7 +62,7 @@ namespace WebApiCoreSecurity.Controllers
         [HttpDelete("Delete")]
         [AllowAnonymous]
         [Route("RemoveFromRole")]
-        public async Task<IActionResult> Delete(string Id, UserViewModel model)
+        public async Task<IActionResult> Delete(string Id, [FromBody]UserViewModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

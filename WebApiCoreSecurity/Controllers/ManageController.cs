@@ -37,7 +37,7 @@ namespace WebApiCoreSecurity.Controllers
 
         [HttpPost]
         [Route("ChangePassword")]
-        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        public async Task<IActionResult> ChangePassword([FromBody]ChangePasswordViewModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -78,7 +78,7 @@ namespace WebApiCoreSecurity.Controllers
 
         [HttpPost]
         [Route("SetPassword")]
-        public async Task<IActionResult> SetPassword(SetPasswordViewModel model)
+        public async Task<IActionResult> SetPassword([FromBody]SetPasswordViewModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
