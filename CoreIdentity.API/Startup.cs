@@ -16,6 +16,9 @@ using CoreIdentity.API.Settings;
 using CoreIdentity.API.Services;
 using CoreIdentity.API.Middleware;
 using CoreIdentity.API.Helpers;
+using CoreIdentity.Data;
+using CoreIdentity.Data.Interfaces;
+using CoreIdentity.Data.Repos;
 
 namespace CoreIdentity.API
 {
@@ -33,18 +36,24 @@ namespace CoreIdentity.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Identity
             services.AddDbContext<SecurityContext>(options => options.UseSqlServer(Configuration["ConnectionStrings:Default"]));
-
             IdentityHelper.ConfigureService(services);
+
+            // Helpers
             AuthenticationHelper.ConfigureService(services, Configuration["JwtSecurityToken:Issuer"], Configuration["JwtSecurityToken:Audience"], Configuration["JwtSecurityToken:Key"]);
             CorsHelper.ConfigureService(services);
-            
+            SwaggerHelper.ConfigureService(services);
+
+            // Settings
             services.Configure<EmailSettings>(Configuration.GetSection("Email"));
             services.AddTransient<IEmailService, EmailService>();
 
-            services.AddMvc();
+            // Data
+            services.AddDbContextPool<DataContext>(options => options.UseSqlServer(Configuration["ConnectionStrings:Default"]));
+            services.AddScoped<IExampleRepo, ExampleRepo>();
 
-            SwaggerHelper.ConfigureService(services);
+            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

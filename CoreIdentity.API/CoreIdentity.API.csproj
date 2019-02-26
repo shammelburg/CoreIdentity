@@ -22,6 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CoreIdentity.Data\CoreIdentity.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="CoreIdentity.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
