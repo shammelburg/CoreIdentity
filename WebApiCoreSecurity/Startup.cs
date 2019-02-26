@@ -11,6 +11,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using WebApiCoreSecurity.Identity;
 
 namespace WebApiCoreSecurity
 {

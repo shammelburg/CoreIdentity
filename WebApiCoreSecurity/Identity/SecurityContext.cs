@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace WebApiCoreSecurity
+namespace WebApiCoreSecurity.Identity
 {
     public class SecurityContext : IdentityDbContext<IdentityUser>
     {
