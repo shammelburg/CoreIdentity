@@ -11,6 +11,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using CoreIdentityWebApi.Helper;
+using CoreIdentityWebApi.Identity.Helper;
 using CoreIdentityWebApi.Identity.ViewModels;
 
 namespace CoreIdentityWebApi.Identity.Controllers

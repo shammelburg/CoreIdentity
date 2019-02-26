@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using CoreIdentityWebApi.Helper;
+using CoreIdentityWebApi.Identity.Helper;
 using CoreIdentityWebApi.Identity.ViewModels;
 
 namespace CoreIdentityWebApi.Identity.Controllers

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using CoreIdentityWebApi.Identity.Controllers;
 
-namespace CoreIdentityWebApi.Helper
+namespace CoreIdentityWebApi.Identity.Helper
 {
     public static class UrlHelperExtensions
     {
