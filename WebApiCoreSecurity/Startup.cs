@@ -88,7 +88,7 @@ namespace WebApiCoreSecurity
                        .AllowAnyHeader();
             }));
 
-            services.AddMvc();//.SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc();
 
             // https://docs.microsoft.com/en-us/aspnet/core/tutorials/getting-started-with-swashbuckle?view=aspnetcore-2.2&tabs=visual-studio
             // Register the Swagger generator, defining 1 or more Swagger documents
