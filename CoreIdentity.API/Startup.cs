@@ -14,6 +14,7 @@ using System.Text;
 using CoreIdentity.API.Identity;
 using CoreIdentity.Settings;
 using CoreIdentity.Services;
+using CoreIdentity.Middleware;
 
 namespace CoreIdentity.API
 {
@@ -123,7 +124,7 @@ namespace CoreIdentity.API
 
             app.UseAuthentication();
             app.UseCors("CorsPolicy");
-            //https://github.com/shammelburg/CoreWeb/blob/master/CoreWeb/Middleware/ErrorHandlingMiddleware.cs
+            app.UseErrorHandlingMiddleware();
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
