@@ -6,6 +6,7 @@ namespace CoreIdentity.API.Identity.ViewModels
     {
         [Required]
         [EmailAddress]
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
     }
 }

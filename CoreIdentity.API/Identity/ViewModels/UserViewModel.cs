@@ -9,7 +9,9 @@ namespace CoreIdentity.API.Identity.ViewModels
         [DataType(DataType.Password)]
         public string Password { get; set; }
         [DataType(DataType.Password)]
+        [Compare("Password", ErrorMessage = "The new password and confirmation password do not match."))]
         public string ConfirmPassword { get; set; }
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
         public string ApplicationRoleId { get; set; }
         public string UserId { get; set; }
