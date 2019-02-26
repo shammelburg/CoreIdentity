@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
 
 namespace CoreIdentity.Services
@@ -12,5 +11,9 @@ namespace CoreIdentity.Services
         Task SendEmailConfirmationAsync(string Email, string CallbackUrl);
 
         Task SendPasswordResetAsync(string Email, string CallbackUrl);
+
+        Task SendException(Exception ex);
+
+        Task SendSqlException(SqlException ex);
     }
 }

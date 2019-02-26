@@ -1,9 +1,7 @@
 ﻿using CoreIdentity.Settings;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Data.SqlClient;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -66,6 +64,40 @@ namespace CoreIdentity.Services
                 }
 
                 PrepareMailMessage("CoreIdentity", "Reset your email", $"Please reset your password by clicking here: <a href='{CallbackUrl}'>link</a>", _email.From, EmailAddress, mailMessage);
+
+                await client.SendMailAsync(mailMessage);
+            }
+        }
+
+        public async Task SendException(Exception ex)
+        {
+            using (var client = new SmtpClient(_email.SMTPServer, _email.Port))
+            using (var mailMessage = new MailMessage())
+            {
+                if (!_email.DefaultCredentials)
+                {
+                    client.UseDefaultCredentials = false;
+                    client.Credentials = new NetworkCredential(_email.UserName, _email.Password);
+                }
+
+                PrepareMailMessage("CoreIdentity", "INTERNAL SERVER ERROR", $"{ex.ToString()}", _email.From, _email.To, mailMessage);
+
+                await client.SendMailAsync(mailMessage);
+            }
+        }
+
+        public async Task SendSqlException(SqlException ex)
+        {
+            using (var client = new SmtpClient(_email.SMTPServer, _email.Port))
+            using (var mailMessage = new MailMessage())
+            {
+                if (!_email.DefaultCredentials)
+                {
+                    client.UseDefaultCredentials = false;
+                    client.Credentials = new NetworkCredential(_email.UserName, _email.Password);
+                }
+
+                PrepareMailMessage("CoreIdentity", "Reset your email", $"{ex.ToString()}", _email.From, _email.To, mailMessage);
 
                 await client.SendMailAsync(mailMessage);
             }
