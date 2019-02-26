@@ -71,7 +71,7 @@ namespace WebApiCoreSecurity.Controllers
         }
 
         //[ValidateForm]
-        [HttpPost("CreateToken")]
+        [HttpPost]
         [Route("token")]
         public async Task<IActionResult> CreateToken([FromBody]LoginViewModel vm)
         {
@@ -112,7 +112,7 @@ namespace WebApiCoreSecurity.Controllers
             return BadRequest("Invalid login attempt.");
         }
 
-        [HttpPost("LoginWith2fa")]
+        [HttpPost]
         [AllowAnonymous]
         [Route("2fa")]
         public async Task<IActionResult> LoginWith2fa([FromBody]LoginWith2faViewModel model)

@@ -23,16 +23,16 @@ namespace WebApiCoreSecurity.Controllers
             this._roleManager = roleManager;
         }
 
-        [HttpGet("{Id}")]
+        [HttpGet]
         [AllowAnonymous]
-        [Route("GetUserRoles")]
+        [Route("GetUserRoles/{Id}")]
         public async Task<IActionResult> Get(string Id)
         {
             IdentityUser user = await _userManager.FindByIdAsync(Id);
             return Ok(await _userManager.GetRolesAsync(user));
         }
 
-        [HttpPost("Post")]
+        [HttpPost]
         [AllowAnonymous]
         [Route("AddToRole")]
         public async Task<IActionResult> Post([FromBody]UserViewModel model)
@@ -56,7 +56,7 @@ namespace WebApiCoreSecurity.Controllers
             return BadRequest(result);
         }
 
-        [HttpDelete("Delete")]
+        [HttpDelete]
         [AllowAnonymous]
         [Route("RemoveFromRole")]
         public async Task<IActionResult> Delete(string Id, [FromBody]UserViewModel model)

@@ -26,7 +26,6 @@ namespace WebApiCoreSecurity.Controllers
         }
 
         [HttpGet]
-        //[AllowAnonymous]
         [Authorize(Roles = "Admin")]
         public IActionResult Get()
         {
@@ -34,7 +33,6 @@ namespace WebApiCoreSecurity.Controllers
         }
 
         [HttpGet("{Id}")]
-        //[AllowAnonymous]
         public IActionResult Get(string Id)
         {
             if (String.IsNullOrEmpty(Id))
@@ -43,8 +41,7 @@ namespace WebApiCoreSecurity.Controllers
             return Ok(_userManager.Users.Where(user => user.Id == Id));
         }
 
-        [HttpPost("Post")]
-        //[AllowAnonymous]
+        [HttpPost]
         [Route("InsertWithRole")]
         public async Task<IActionResult> Post([FromBody]UserViewModel model)
         {
@@ -75,8 +72,7 @@ namespace WebApiCoreSecurity.Controllers
             return BadRequest(result);
         }
 
-        [HttpPost("Put")]
-        //[AllowAnonymous]
+        [HttpPost]
         [Route("Update")]
         public async Task<IActionResult> Put(string Id, [FromBody]EditUserViewModel model)
         {

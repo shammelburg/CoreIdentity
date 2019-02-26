@@ -15,7 +15,8 @@ namespace WebApiCoreSecurity.Controllers
         }
 
         // GET: api/Values/5
-        [HttpGet("{id}", Name = "Get")]
+        [HttpGet]
+        [Route("{id}")]
         public string Get(int id)
         {
             return "value";
@@ -28,13 +29,15 @@ namespace WebApiCoreSecurity.Controllers
         }
         
         // PUT: api/Values/5
-        [HttpPut("{id}")]
+        [HttpPut]
+        [Route("{id}")]
         public void Put(int id, [FromBody]string value)
         {
         }
         
         // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
+        [HttpDelete]
+        [Route("{id}")]
         public void Delete(int id)
         {
         }
