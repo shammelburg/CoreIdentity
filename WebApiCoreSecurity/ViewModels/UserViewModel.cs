@@ -1,9 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace WebApiCoreSecurity.ViewModels
 {
@@ -17,5 +12,7 @@ namespace WebApiCoreSecurity.ViewModels
         public string ConfirmPassword { get; set; }
         public string Email { get; set; }
         public string ApplicationRoleId { get; set; }
+        public string UserId { get; set; }
+        public string RoleId { get; set; }
     }
 }

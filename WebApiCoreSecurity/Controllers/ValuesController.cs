@@ -1,21 +1,13 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
 namespace WebApiCoreSecurity.Controllers
 {
-    //[Authorize(AuthenticationSchemes = "Bearer")]
-    [Authorize]
     [Produces("application/json")]
     [Route("api/values")]
     public class ValuesController : Controller
     {
         // GET: api/Values
-        [Authorize(Roles = "Super")]
         [HttpGet]
         public IEnumerable<string> Get()
         {
@@ -23,7 +15,6 @@ namespace WebApiCoreSecurity.Controllers
         }
 
         // GET: api/Values/5
-        //[Authorize(Roles = "Super")]
         [HttpGet("{id}", Name = "Get")]
         public string Get(int id)
         {
