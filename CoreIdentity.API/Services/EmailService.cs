@@ -1,4 +1,4 @@
-﻿using CoreIdentity.Settings;
+﻿using CoreIdentity.API.Settings;
 using Microsoft.Extensions.Options;
 using System;
 using System.Data.SqlClient;
@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
 
-namespace CoreIdentity.Services
+namespace CoreIdentity.API.Services
 {
     public class EmailService: IEmailService
     {

@@ -2,7 +2,7 @@
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 
-namespace CoreIdentity.Services
+namespace CoreIdentity.API.Services
 {
     public interface IEmailService
     {

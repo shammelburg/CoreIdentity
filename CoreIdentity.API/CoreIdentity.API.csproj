@@ -30,7 +30,7 @@
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
-    <RootNamespace>CoreIdentity</RootNamespace>
+    <RootNamespace>CoreIdentity.API</RootNamespace>
     <AssemblyName>CoreIdentity</AssemblyName>
   </PropertyGroup>
 

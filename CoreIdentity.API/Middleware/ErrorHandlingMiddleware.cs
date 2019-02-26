@@ -1,4 +1,4 @@
-﻿using CoreIdentity.Services;
+﻿using CoreIdentity.API.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
@@ -8,7 +8,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CoreIdentity.Middleware
+namespace CoreIdentity.API.Middleware
 {
     public class ErrorHandlingMiddleware
     {

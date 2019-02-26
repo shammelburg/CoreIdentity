@@ -10,10 +10,10 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using CoreIdentity.API.Helper;
+using CoreIdentity.API.Helpers;
 using CoreIdentity.API.Identity.Helper;
 using CoreIdentity.API.Identity.ViewModels;
-using CoreIdentity.Services;
+using CoreIdentity.API.Services;
 
 namespace CoreIdentity.API.Identity.Controllers
 {

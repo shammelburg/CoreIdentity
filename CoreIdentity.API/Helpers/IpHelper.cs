@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace CoreIdentity.API.Helper
+namespace CoreIdentity.API.Helpers
 {
     public class IpHelper
     {

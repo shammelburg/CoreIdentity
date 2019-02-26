@@ -7,7 +7,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using CoreIdentity.API.Identity.Helper;
 using CoreIdentity.API.Identity.ViewModels;
-using CoreIdentity.Services;
+using CoreIdentity.API.Services;
 
 namespace CoreIdentity.API.Identity.Controllers
 {

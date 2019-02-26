@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using CoreIdentity.API.Helper;
+using CoreIdentity.API.Helpers;
 
 namespace CoreIdentity.API.Middleware
 {
