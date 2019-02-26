@@ -6,9 +6,9 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using WebApiCoreSecurity.Helper;
-using WebApiCoreSecurity.IdentityModels;
+using WebApiCoreSecurity.Identity.ViewModels;
 
-namespace WebApiCoreSecurity.Controllers
+namespace WebApiCoreSecurity.Identity.Controllers
 {
     [Authorize]
     [Produces("application/json")]

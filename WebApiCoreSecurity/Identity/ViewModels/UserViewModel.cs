@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebApiCoreSecurity.IdentityModels
+namespace WebApiCoreSecurity.Identity.ViewModels
 {
     public class UserViewModel
     {

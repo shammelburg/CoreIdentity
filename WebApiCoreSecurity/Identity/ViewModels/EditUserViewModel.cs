@@ -1,4 +1,4 @@
-﻿namespace WebApiCoreSecurity.IdentityModels
+﻿namespace WebApiCoreSecurity.Identity.ViewModels
 {
     public class EditUserViewModel
     {

@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
-using WebApiCoreSecurity.IdentityModels;
+using WebApiCoreSecurity.Identity.ViewModels;
 
-namespace WebApiCoreSecurity.Controllers
+namespace WebApiCoreSecurity.Identity.Controllers
 {
     [Produces("application/json")]
     [Route("api/UserRoles")]

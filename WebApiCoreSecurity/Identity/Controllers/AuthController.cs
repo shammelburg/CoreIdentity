@@ -11,9 +11,9 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using WebApiCoreSecurity.Helper;
-using WebApiCoreSecurity.IdentityModels;
+using WebApiCoreSecurity.Identity.ViewModels;
 
-namespace WebApiCoreSecurity.Controllers
+namespace WebApiCoreSecurity.Identity.Controllers
 {
     [Produces("application/json")]
     [Route("api/Auth")]

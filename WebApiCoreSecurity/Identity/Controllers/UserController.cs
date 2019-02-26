@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using WebApiCoreSecurity.IdentityModels;
+using WebApiCoreSecurity.Identity.ViewModels;
 
-namespace WebApiCoreSecurity.Controllers
+namespace WebApiCoreSecurity.Identity.Controllers
 {
     [Authorize]
     [Produces("application/json")]
