@@ -12,7 +12,7 @@ namespace CoreIdentity.API.Identity.Controllers
 {
     [Authorize]
     [Produces("application/json")]
-    [Route("api/Manage")]
+    [Route("api/manage")]
     public class ManageController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -32,8 +32,54 @@ namespace CoreIdentity.API.Identity.Controllers
             this._urlEncoder = urlEncoder;
         }
 
+        /// <summary>
+        /// Get TFA stats
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("twoFactorAuthentication")]
+        public async Task<IActionResult> TwoFactorAuthentication()
+        {
+            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
+            if (user == null)
+                return BadRequest("Could not find user!");
+
+            var model = new TwoFactorAuthenticationViewModel
+            {
+                HasAuthenticator = await _userManager.GetAuthenticatorKeyAsync(user) != null,
+                Is2faEnabled = user.TwoFactorEnabled,
+                RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user),
+            };
+
+            return Ok(model);
+        }
+
+        /// <summary>
+        /// https://docs.microsoft.com/en-us/aspnet/core/security/authentication/identity-enable-qrcodes
+        /// http://jakeydocs.readthedocs.io/en/latest/security/authentication/2fa.html#log-in-with-two-factor-authentication
+        /// </summary>
+        /// <returns>QR Code</returns>
+        [HttpGet]
+        [Route("enableAuthenticator")]
+        public async Task<IActionResult> EnableAuthenticator()
+        {
+            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
+            if (user == null)
+                return BadRequest("Could not find user!");
+
+            var model = new EnableAuthenticatorViewModel();
+            await LoadSharedKeyAndQrCodeUriAsync(user, model);
+
+            return Ok(model);
+        }
+
+        /// <summary>
+        /// Change password for authenticated user
+        /// </summary>
+        /// <param name="model">ChangePasswordViewModel</param>
+        /// <returns></returns>
         [HttpPost]
-        [Route("ChangePassword")]
+        [Route("changePassword")]
         public async Task<IActionResult> ChangePassword([FromBody]ChangePasswordViewModel model)
         {
             if (!ModelState.IsValid)
@@ -47,13 +93,15 @@ namespace CoreIdentity.API.Identity.Controllers
             if (!changePasswordResult.Succeeded)
                 return BadRequest("Could not change password!");
 
-            // await _signInManager.SignInAsync(user, isPersistent: false);
-
             return Ok(changePasswordResult);
         }
 
+        /// <summary>
+        /// Send email verification email
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
-        [Route("SendVerificationEmail")]
+        [Route("sendVerificationEmail")]
         public async Task<IActionResult> SendVerificationEmail()
         {
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
@@ -73,8 +121,13 @@ namespace CoreIdentity.API.Identity.Controllers
             });
         }
 
+        /// <summary>
+        /// Set a password if the user doesn't have one already
+        /// </summary>
+        /// <param name="model">SetPasswordViewModel</param>
+        /// <returns></returns>
         [HttpPost]
-        [Route("SetPassword")]
+        [Route("setPassword")]
         public async Task<IActionResult> SetPassword([FromBody]SetPasswordViewModel model)
         {
             if (!ModelState.IsValid)
@@ -85,7 +138,6 @@ namespace CoreIdentity.API.Identity.Controllers
                 return BadRequest("Could not find user!");
 
             var addPasswordResult = await _userManager.AddPasswordAsync(user, model.NewPassword);
-            //await _signInManager.SignInAsync(user, isPersistent: false);
 
             if (addPasswordResult.Succeeded)
                 return Ok(addPasswordResult);
@@ -93,26 +145,12 @@ namespace CoreIdentity.API.Identity.Controllers
             return BadRequest(addPasswordResult);
         }
 
-        [HttpGet]
-        [Route("TwoFactorAuthentication")]
-        public async Task<IActionResult> TwoFactorAuthentication()
-        {
-            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
-            if (user == null)
-                return BadRequest("Could not find user!");
-
-            var model = new TwoFactorAuthenticationViewModel
-            {
-                HasAuthenticator = await _userManager.GetAuthenticatorKeyAsync(user) != null,
-                Is2faEnabled = user.TwoFactorEnabled,
-                RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user),
-            };
-
-            return Ok(model);
-        }
-
+        /// <summary>
+        /// Disable TFA
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
-        [Route("Disable2fa")]
+        [Route("disableTfa")]
         public async Task<IActionResult> Disable2fa()
         {
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
@@ -131,26 +169,12 @@ namespace CoreIdentity.API.Identity.Controllers
         }
 
         /// <summary>
-        /// https://docs.microsoft.com/en-us/aspnet/core/security/authentication/identity-enable-qrcodes
-        /// http://jakeydocs.readthedocs.io/en/latest/security/authentication/2fa.html#log-in-with-two-factor-authentication
+        /// Enable TFA (requires QR code)
         /// </summary>
+        /// <param name="model">EnableAuthenticatorViewModel</param>
         /// <returns></returns>
-        [HttpGet]
-        [Route("EnableAuthenticator")]
-        public async Task<IActionResult> EnableAuthenticator()
-        {
-            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
-            if (user == null)
-                return BadRequest("Could not find user!");
-
-            var model = new EnableAuthenticatorViewModel();
-            await LoadSharedKeyAndQrCodeUriAsync(user, model);
-
-            return Ok(model);
-        }
-
         [HttpPost]
-        [Route("EnableAuthenticator")]
+        [Route("enableAuthenticator")]
         public async Task<IActionResult> EnableAuthenticator([FromBody]EnableAuthenticatorViewModel model)
         {
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
@@ -197,8 +221,12 @@ namespace CoreIdentity.API.Identity.Controllers
         //    return View(model);
         //}
 
+        /// <summary>
+        /// Reset TFA (This will reset and disable TFA)
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
-        [Route("ResetAuthenticator")]
+        [Route("resetAuthenticator")]
         public async Task<IActionResult> ResetAuthenticator()
         {
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
@@ -207,14 +235,16 @@ namespace CoreIdentity.API.Identity.Controllers
 
             await _userManager.SetTwoFactorEnabledAsync(user, false);
             await _userManager.ResetAuthenticatorKeyAsync(user);
-
-            //$"User with id '{user.Id}' has reset their authentication app key."
-
+            
             return Ok();
         }
 
+        /// <summary>
+        /// Generate new recovery codes (This will invalidate previous codes)
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
-        [Route("GenerateRecoveryCodes")]
+        [Route("generateRecoveryCodes")]
         public async Task<IActionResult> GenerateRecoveryCodes()
         {
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);

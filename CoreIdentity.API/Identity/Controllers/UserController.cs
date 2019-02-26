@@ -10,7 +10,7 @@ namespace CoreIdentity.API.Identity.Controllers
 {
     [Authorize]
     [Produces("application/json")]
-    [Route("api/User")]
+    [Route("api/user")]
     public class UserController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -25,14 +25,21 @@ namespace CoreIdentity.API.Identity.Controllers
             this._roleManager = roleManager;
         }
 
+        /// <summary>
+        /// Get all users
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
-        [Authorize(Roles = "Admin")]
-        public IActionResult Get()
-        {
-            return Ok(_userManager.Users);
-        }
+        [Route("get")]
+        public IActionResult Get() => Ok(_userManager.Users);
 
-        [HttpGet("{Id}")]
+        /// <summary>
+        /// Get a user
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("get/{Id}")]
         public IActionResult Get(string Id)
         {
             if (String.IsNullOrEmpty(Id))
@@ -41,8 +48,13 @@ namespace CoreIdentity.API.Identity.Controllers
             return Ok(_userManager.Users.Where(user => user.Id == Id));
         }
 
+        /// <summary>
+        /// Insert a user with an existing role
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
-        [Route("InsertWithRole")]
+        [Route("insertWithRoles")]
         public async Task<IActionResult> Post([FromBody]UserViewModel model)
         {
             if (!ModelState.IsValid)
@@ -54,26 +66,30 @@ namespace CoreIdentity.API.Identity.Controllers
                 Email = model.Email
             };
 
+            IdentityRole role = await _roleManager.FindByIdAsync(model.ApplicationRoleId);
+            if (role == null)
+                return BadRequest("Could not find role!");
+
             IdentityResult result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
-                IdentityRole role = await _roleManager.FindByIdAsync(model.ApplicationRoleId);
-                if (role == null)
-                    return BadRequest("Could not find role!");
-
                 IdentityResult result2 = await _userManager.AddToRoleAsync(user, role.Name);
                 if (result2.Succeeded)
                 {
                     return Ok(result2);
                 }
-                return BadRequest(result2);
-
             }
             return BadRequest(result);
         }
 
+        /// <summary>
+        /// Update a user
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
-        [Route("Update")]
+        [Route("update/{Id}")]
         public async Task<IActionResult> Put(string Id, [FromBody]EditUserViewModel model)
         {
             if (!ModelState.IsValid)
@@ -97,8 +113,14 @@ namespace CoreIdentity.API.Identity.Controllers
             return BadRequest(result);
         }
 
+        /// <summary>
+        /// Delete a user (Will also delete link to roles)
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
         [HttpDelete]
-        public async Task<IActionResult> DeleteUser(string Id)
+        [Route("delete/{Id}")]
+        public async Task<IActionResult> Delete(string Id)
         {
             if (!String.IsNullOrEmpty(Id))
                 return BadRequest("Empty parameter!");

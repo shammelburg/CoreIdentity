@@ -8,7 +8,7 @@ using CoreIdentity.API.Identity.ViewModels;
 namespace CoreIdentity.API.Identity.Controllers
 {
     [Produces("application/json")]
-    [Route("api/UserRoles")]
+    [Route("api/userRoles")]
     public class UserRolesController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -23,18 +23,26 @@ namespace CoreIdentity.API.Identity.Controllers
             this._roleManager = roleManager;
         }
 
+        /// <summary>
+        /// Get a user roles
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
         [HttpGet]
-        [AllowAnonymous]
-        [Route("GetUserRoles/{Id}")]
+        [Route("get/{Id}")]
         public async Task<IActionResult> Get(string Id)
         {
             IdentityUser user = await _userManager.FindByIdAsync(Id);
             return Ok(await _userManager.GetRolesAsync(user));
         }
 
+        /// <summary>
+        /// Add a user to existing role
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
-        [AllowAnonymous]
-        [Route("AddToRole")]
+        [Route("add")]
         public async Task<IActionResult> Post([FromBody]UserViewModel model)
         {
             if (!ModelState.IsValid)
@@ -56,9 +64,14 @@ namespace CoreIdentity.API.Identity.Controllers
             return BadRequest(result);
         }
 
+        /// <summary>
+        /// Remove a user from an existing role
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpDelete]
-        [AllowAnonymous]
-        [Route("RemoveFromRole")]
+        [Route("remove")]
         public async Task<IActionResult> Delete(string Id, [FromBody]UserViewModel model)
         {
             if (!ModelState.IsValid)

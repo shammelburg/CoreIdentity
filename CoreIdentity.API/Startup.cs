@@ -95,7 +95,7 @@ namespace CoreIdentity.API
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "ASP.NET Core Identity Web API", Version = "v1" });
+                c.SwaggerDoc("v1", new Info { Title = "Core Identity", Version = "v1", Description = "Using ASP.NET Core Identity Web API With JWT, TFA Authenticator and Swagger" });
 
                 // Set the comments path for the Swagger JSON and UI.
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";

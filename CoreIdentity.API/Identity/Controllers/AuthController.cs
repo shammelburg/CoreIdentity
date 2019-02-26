@@ -17,7 +17,7 @@ using CoreIdentity.API.Identity.ViewModels;
 namespace CoreIdentity.API.Identity.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Auth")]
+    [Route("api/auth")]
     public class AuthController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
@@ -35,10 +35,36 @@ namespace CoreIdentity.API.Identity.Controllers
             this._configuration = configuration;
         }
 
+        /// <summary>
+        /// Confirms a user email address
+        /// </summary>
+        /// <param name="userId">The user Id</param>
+        /// <param name="code">The token generate from the email</param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("confirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        {
+            if (userId == null || code == null)
+                return BadRequest("Error retrieving information!");
 
-        [AllowAnonymous]
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return BadRequest("Could not find user!");
+
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+            if (result.Succeeded)
+                return Ok(result);
+            return BadRequest(result);
+        }
+
+        /// <summary>
+        /// Register an account
+        /// </summary>
+        /// <param name="model">RegisterViewModel</param>
+        /// <returns></returns>
         [HttpPost]
-        [Route("Register")]
+        [Route("register")]
         public async Task<IActionResult> Register([FromBody]RegisterViewModel model)
         {
             if (!ModelState.IsValid)
@@ -71,12 +97,16 @@ namespace CoreIdentity.API.Identity.Controllers
             return BadRequest(result);
         }
 
-        //[ValidateForm]
+        /// <summary>
+        /// Log into account
+        /// </summary>
+        /// <param name="model">LoginViewModel</param>
+        /// <returns></returns>
         [HttpPost]
         [Route("token")]
-        public async Task<IActionResult> CreateToken([FromBody]LoginViewModel vm)
+        public async Task<IActionResult> CreateToken([FromBody]LoginViewModel model)
         {
-            var user = await _userManager.FindByNameAsync(vm.UserName);
+            var user = await _userManager.FindByNameAsync(model.UserName);
             if (user == null)
                 return BadRequest("Invalid login attempt.");
 
@@ -88,7 +118,7 @@ namespace CoreIdentity.API.Identity.Controllers
             if (user.LockoutEnabled)
                 return BadRequest("This account has been locked.");
 
-            if (await _userManager.CheckPasswordAsync(user, vm.Password))
+            if (await _userManager.CheckPasswordAsync(user, model.Password))
             {
                 if (user.TwoFactorEnabled)
                 {
@@ -113,9 +143,13 @@ namespace CoreIdentity.API.Identity.Controllers
             return BadRequest("Invalid login attempt.");
         }
 
+        /// <summary>
+        /// Log in with TFA 
+        /// </summary>
+        /// <param name="model">LoginWith2faViewModel</param>
+        /// <returns></returns>
         [HttpPost]
-        [AllowAnonymous]
-        [Route("2fa")]
+        [Route("tfa")]
         public async Task<IActionResult> LoginWith2fa([FromBody]LoginWith2faViewModel model)
         {
             if (!ModelState.IsValid)
@@ -136,6 +170,61 @@ namespace CoreIdentity.API.Identity.Controllers
                 });
             }
             return BadRequest("Unable to verify Authenticator Code!");
+        }
+
+        /// <summary>
+        /// Forgot email sends an email with a link containing reset token
+        /// </summary>
+        /// <param name="model">ForgotPasswordViewModel</param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("forgotPassword")]
+        public async Task<IActionResult> ForgotPassword([FromBody]ForgotPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+                return BadRequest("Could not continue with this request. (E1)");
+
+            // For more information on how to enable account confirmation and password reset please
+            // visit https://go.microsoft.com/fwlink/?LinkID=532713
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+            //var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
+            //await _emailSender.SendEmailAsync(model.Email, "Reset Password",
+            //   $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
+            return Ok(new
+            {
+                Message = $"Please reset your password by clicking here: <a href=''>link</a>",
+                Code = code
+            });
+        }
+
+        /// <summary>
+        /// Reset account password with reset token
+        /// </summary>
+        /// <param name="model">ResetPasswordViewModel</param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("resetPassword")]
+        public async Task<IActionResult> ResetPassword([FromBody]ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                // Don't reveal that the user does not exist
+                return BadRequest("Could not continue with this request. (E1)");
+            }
+            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
+            if (result.Succeeded)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
         
         private async Task<JwtSecurityToken> CreateJwtToken(IdentityUser user)
@@ -162,8 +251,7 @@ namespace CoreIdentity.API.Identity.Controllers
             }
             .Union(userClaims)
             .Union(roleClaims);
-
-
+            
             var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSecurityToken:Key"]));
             var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
 
@@ -174,72 +262,6 @@ namespace CoreIdentity.API.Identity.Controllers
                 expires: DateTime.UtcNow.AddMinutes(30),
                 signingCredentials: signingCredentials);
             return jwtSecurityToken;
-        }
-        
-        [HttpPost]
-        [AllowAnonymous]
-        [Route("ForgotPassword")]
-        public async Task<IActionResult> ForgotPassword([FromBody]ForgotPasswordViewModel model)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
-                return BadRequest("Could not continue with this request. (E1)");
-
-            // For more information on how to enable account confirmation and password reset please
-            // visit https://go.microsoft.com/fwlink/?LinkID=532713
-            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-            //var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
-            //await _emailSender.SendEmailAsync(model.Email, "Reset Password",
-            //   $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
-            return Ok(new
-            {
-                Message = $"Please reset your password by clicking here: <a href=''>link</a>",
-                Code = code
-            });
-        }
-
-        [HttpPost]
-        [AllowAnonymous]
-        [Route("ResetPassword")]
-        //[ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword([FromBody]ResetPasswordViewModel model)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null)
-            {
-                // Don't reveal that the user does not exist
-                return BadRequest("Could not continue with this request. (E1)");
-            }
-            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
-            if (result.Succeeded)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
-        }
-
-        [HttpGet]
-        [AllowAnonymous]
-        [Route("ConfirmEmail")]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code)
-        {
-            if (userId == null || code == null)
-                return BadRequest("Error retrieving information!");
-
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-                return BadRequest("Could not find user!");
-
-            var result = await _userManager.ConfirmEmailAsync(user, code);
-            if (result.Succeeded)
-                return Ok(result);
-            return BadRequest(result);
         }
     }
 }

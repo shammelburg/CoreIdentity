@@ -7,8 +7,9 @@ using CoreIdentity.API.Identity.ViewModels;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
+    [Authorize]
     [Produces("application/json")]
-    [Route("api/Role")]
+    [Route("api/role")]
     public class RoleController : Controller
     {
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -18,31 +19,33 @@ namespace CoreIdentity.API.Identity.Controllers
             this._roleManager = roleManager;
         }
 
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult Get()
-        {
-            return Ok(_roleManager.Roles);
-        }
 
+        /// <summary>
+        /// Get all roles
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("get")]
+        public IActionResult Get() => Ok(_roleManager.Roles);
+
+        /// <summary>
+        /// Insert a role
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
-        [AllowAnonymous]
-        [Route("InsertUpdate")]
+        [Route("insert")]
         public async Task<IActionResult> Post([FromBody]RoleViewModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            bool isExist = !String.IsNullOrEmpty(model.Id);
-
-            IdentityRole identityRole = isExist ? await _roleManager.FindByIdAsync(model.Id) : new IdentityRole
+            IdentityRole identityRole = new IdentityRole
             {
                 Name = model.RoleName
             };
 
-            identityRole.Name = model.RoleName;
-
-            IdentityResult result = isExist ? await _roleManager.UpdateAsync(identityRole) : await _roleManager.CreateAsync(identityRole);
+            IdentityResult result = await _roleManager.CreateAsync(identityRole);
             if (result.Succeeded)
             {
                 return Ok(result);
@@ -50,8 +53,35 @@ namespace CoreIdentity.API.Identity.Controllers
             return BadRequest(result);
         }
 
+        /// <summary>
+        /// Update a role
+        /// </summary>
+        /// <param name="Id">Role Id</param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("update/{Id}")]
+        public async Task<IActionResult> Put(int Id, [FromBody]RoleViewModel model)
+        {
+            IdentityRole identityRole = await _roleManager.FindByIdAsync(model.Id);
+
+            identityRole.Name = model.RoleName;
+
+            IdentityResult result = await _roleManager.UpdateAsync(identityRole);
+            if (result.Succeeded)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        /// <summary>
+        /// Delete a role
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
         [HttpDelete]
-        [AllowAnonymous]
+        [Route("delete/{Id}")]
         public async Task<IActionResult> Delete(string Id)
         {
             if (String.IsNullOrEmpty(Id))
