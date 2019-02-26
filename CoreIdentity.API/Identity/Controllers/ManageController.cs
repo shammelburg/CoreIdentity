@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using CoreIdentity.API.Identity.Helper;
 using CoreIdentity.API.Identity.ViewModels;
+using CoreIdentity.Services;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
@@ -18,18 +19,21 @@ namespace CoreIdentity.API.Identity.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UrlEncoder _urlEncoder;
+        private readonly IEmailService _emailService;
 
         private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
 
         public ManageController(
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            UrlEncoder urlEncoder
+            UrlEncoder urlEncoder,
+            IEmailService emailService
             )
         {
             this._userManager = userManager;
             this._roleManager = roleManager;
             this._urlEncoder = urlEncoder;
+            this._emailService = emailService;
         }
 
         /// <summary>
@@ -110,8 +114,8 @@ namespace CoreIdentity.API.Identity.Controllers
 
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
-            //var email = user.Email;
-            //await _emailSender.SendEmailConfirmationAsync(email, callbackUrl);
+
+            await _emailService.SendEmailConfirmationAsync(user.Email, callbackUrl);
 
             return Ok(new
             {

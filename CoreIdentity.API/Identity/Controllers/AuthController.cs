@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using CoreIdentity.API.Helper;
 using CoreIdentity.API.Identity.Helper;
 using CoreIdentity.API.Identity.ViewModels;
+using CoreIdentity.Services;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
@@ -22,17 +23,20 @@ namespace CoreIdentity.API.Identity.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
+        private readonly IEmailService _emailService;
 
         public AuthController(
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            IConfiguration configuration
+            IConfiguration configuration,
+            IEmailService emailService
             )
         {
             this._userManager = userManager;
             this._roleManager = roleManager;
             this._configuration = configuration;
+            this._emailService = emailService;
         }
 
         /// <summary>
@@ -77,9 +81,8 @@ namespace CoreIdentity.API.Identity.Controllers
             {
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
-                //await _emailSender.SendEmailConfirmationAsync(model.Email, callbackUrl);
 
-                //await _signInManager.SignInAsync(user, isPersistent: false);
+                await _emailService.SendEmailConfirmationAsync(model.Email, callbackUrl);
 
                 return Ok(new
                 {
@@ -191,9 +194,12 @@ namespace CoreIdentity.API.Identity.Controllers
             // For more information on how to enable account confirmation and password reset please
             // visit https://go.microsoft.com/fwlink/?LinkID=532713
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-            //var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
+            var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
             //await _emailSender.SendEmailAsync(model.Email, "Reset Password",
             //   $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
+
+            await _emailService.SendPasswordResetAsync(model.Email, callbackUrl);
+
             return Ok(new
             {
                 Message = $"Please reset your password by clicking here: <a href=''>link</a>",

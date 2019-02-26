@@ -12,6 +12,8 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using CoreIdentity.API.Identity;
+using CoreIdentity.Settings;
+using CoreIdentity.Services;
 
 namespace CoreIdentity.API
 {
@@ -88,6 +90,10 @@ namespace CoreIdentity.API
                        .AllowAnyMethod()
                        .AllowAnyHeader();
             }));
+
+            // Settings
+            services.Configure<EmailSettings>(Configuration.GetSection("Email"));
+            services.AddTransient<IEmailService, EmailService>();
 
             services.AddMvc();
 
