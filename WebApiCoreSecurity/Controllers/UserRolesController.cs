@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
-using WebApiCoreSecurity.ViewModels;
+using WebApiCoreSecurity.IdentityModels;
 
 namespace WebApiCoreSecurity.Controllers
 {

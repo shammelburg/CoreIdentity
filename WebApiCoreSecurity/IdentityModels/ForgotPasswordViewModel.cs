@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebApiCoreSecurity.ViewModels
+namespace WebApiCoreSecurity.IdentityModels
 {
     public class ForgotPasswordViewModel
     {

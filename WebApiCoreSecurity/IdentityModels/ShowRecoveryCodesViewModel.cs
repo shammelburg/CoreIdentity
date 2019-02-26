@@ -1,4 +1,4 @@
-﻿namespace WebApiCoreSecurity.ViewModels
+﻿namespace WebApiCoreSecurity.IdentityModels
 {
     public class ShowRecoveryCodesViewModel
     {

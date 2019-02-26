@@ -11,7 +11,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using WebApiCoreSecurity.Helper;
-using WebApiCoreSecurity.ViewModels;
+using WebApiCoreSecurity.IdentityModels;
 
 namespace WebApiCoreSecurity.Controllers
 {

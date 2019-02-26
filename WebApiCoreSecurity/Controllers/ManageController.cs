@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using WebApiCoreSecurity.Helper;
-using WebApiCoreSecurity.ViewModels;
+using WebApiCoreSecurity.IdentityModels;
 
 namespace WebApiCoreSecurity.Controllers
 {
