@@ -1,9 +1,7 @@
 # WebApiCoreSecurity
-Using ASP.NET Core Web API Identity With JWT and TFA Authenticator
+Using ASP.NET Core Web API Identity With JWT, TFA Authenticator and Swagger
 
-This is a work in progress project. 
-
-This ASP.NET Core 2.0 Web API uses Identity Tables and JWT to authenticate and authorize users as well as
+This ASP.NET Core 2.2 Web API uses Identity Tables and JWT to authenticate and authorize users as well as
 user, role and userRole management.
 
 I have got the authenticator working as well but the timing doesn't seem to reflect what on the Authenticator app.
@@ -11,7 +9,7 @@ I have got the authenticator working as well but the timing doesn't seem to refl
 * Added middleware to check for IP addresses, invalid IP request get a 403.
 * Need to find out the purpose of Recovery Codes when the TFA is enabled.
 
-This is being tested with Google Postman.
+This has been tested with Google Postman.
 
 ### Auth (Account)
 
