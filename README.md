@@ -1,5 +1,5 @@
 # WebApiCoreSecurity
-Using ASP.NET Core Web API Identity With JWT, TFA Authenticator and Swagger
+Using ASP.NET Identity Core Web API With JWT, TFA Authenticator and Swagger
 
 This ASP.NET Core 2.2 Web API uses Identity Tables and JWT to authenticate and authorize users as well as
 user, role and userRole management.
