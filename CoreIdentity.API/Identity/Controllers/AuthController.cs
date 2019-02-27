@@ -109,7 +109,7 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("token")]
         public async Task<IActionResult> CreateToken([FromBody]LoginViewModel model)
         {
-            var user = await _userManager.FindByNameAsync(model.UserName);
+            var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
                 return BadRequest("Invalid login attempt.");
 
@@ -158,7 +158,7 @@ namespace CoreIdentity.API.Identity.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = await _userManager.FindByNameAsync(model.UserName);
+            var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
                 return BadRequest("Could not continue with this request. (E1)");
 
