@@ -65,14 +65,14 @@ namespace CoreIdentity.API.Identity.Controllers
         }
 
         /// <summary>
-        /// Remove a user from an existing role
+        /// Delete a user from an existing role
         /// </summary>
         /// <param name="Id"></param>
-        /// <param name="model"></param>
+        /// <param name="RoleId"></param>
         /// <returns></returns>
         [HttpDelete]
-        [Route("remove")]
-        public async Task<IActionResult> Delete(string Id, [FromBody]UserViewModel model)
+        [Route("delete/{Id}/{RoleId}")]
+        public async Task<IActionResult> Delete(string Id, string RoleId)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -81,20 +81,16 @@ namespace CoreIdentity.API.Identity.Controllers
             if (user == null)
                 return BadRequest("Could not find user!");
 
-            string existingRole = _userManager.GetRolesAsync(user).Result.Single();
-            string existingRoleId = _roleManager.Roles.Single(r => r.Name == existingRole).Id;
+            IdentityRole role = await _roleManager.FindByIdAsync(RoleId);
+            if (user == null)
+                return BadRequest("Could not find role!");
 
-            if (existingRoleId == model.ApplicationRoleId)
+            IdentityResult result = await _userManager.RemoveFromRoleAsync(user, role.Name);
+            if (result.Succeeded)
             {
-                IdentityResult result = await _userManager.RemoveFromRoleAsync(user, existingRole);
-                if (result.Succeeded)
-                {
-                    return Ok(result);
-                }
-                return BadRequest(result);
+                return Ok(result);
             }
-
-            return BadRequest("Could not complete request!");
+            return BadRequest(result);
         }
     }
 }
