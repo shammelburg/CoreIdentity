@@ -37,6 +37,27 @@ namespace CoreIdentity.API.Identity.Controllers
         }
 
         /// <summary>
+        /// Get user information
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("userInfo")]
+        public async Task<IActionResult> UserInfo()
+        {
+            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
+
+            var userModel = new
+            {
+                Email = user.Email,
+                EmailConfirmed = user.EmailConfirmed,
+                LockoutEnabled = user.LockoutEnabled,
+                Roles = await _userManager.GetRolesAsync(user)
+            };
+
+            return Ok(userModel);
+        }
+
+        /// <summary>
         /// Get TFA stats
         /// </summary>
         /// <returns></returns>
