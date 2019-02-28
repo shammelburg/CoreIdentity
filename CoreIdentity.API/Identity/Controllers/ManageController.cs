@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using CoreIdentity.API.Identity.Helper;
 using CoreIdentity.API.Identity.ViewModels;
 using CoreIdentity.API.Services;
 using CoreIdentity.API.Settings;

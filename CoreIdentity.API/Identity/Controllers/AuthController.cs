@@ -10,7 +10,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using CoreIdentity.API.Helpers;
-using CoreIdentity.API.Identity.Helper;
 using CoreIdentity.API.Identity.ViewModels;
 using CoreIdentity.API.Services;
 using CoreIdentity.API.Settings;
@@ -27,13 +26,15 @@ namespace CoreIdentity.API.Identity.Controllers
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
         private readonly ClientAppSettings _client;
+        private readonly JwtSecurityTokenSettings _jwt;
 
         public AuthController(
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
             IEmailService emailService,
-            IOptions<ClientAppSettings> client
+            IOptions<ClientAppSettings> client,
+            IOptions<JwtSecurityTokenSettings> jwt
             )
         {
             this._userManager = userManager;
@@ -41,6 +42,7 @@ namespace CoreIdentity.API.Identity.Controllers
             this._configuration = configuration;
             this._emailService = emailService;
             this._client = client.Value;
+            this._jwt = jwt.Value;
         }
 
         /// <summary>
@@ -281,14 +283,14 @@ namespace CoreIdentity.API.Identity.Controllers
             .Union(userClaims)
             .Union(roleClaims);
 
-            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSecurityToken:Key"]));
+            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Key));
             var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
 
             var jwtSecurityToken = new JwtSecurityToken(
-                issuer: _configuration["JwtSecurityToken:Issuer"],
-                audience: _configuration["JwtSecurityToken:Audience"],
+                issuer: _jwt.Issuer,
+                audience: _jwt.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
+                expires: DateTime.UtcNow.AddMinutes(_jwt.DurationInMinutes),
                 signingCredentials: signingCredentials);
             return jwtSecurityToken;
         }

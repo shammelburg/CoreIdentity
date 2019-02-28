@@ -48,6 +48,7 @@ namespace CoreIdentity.API
             // Settings
             services.Configure<EmailSettings>(Configuration.GetSection("Email"));
             services.Configure<ClientAppSettings>(Configuration.GetSection("ClientApp"));
+            services.Configure<JwtSecurityTokenSettings>(Configuration.GetSection("JwtSecurityToken"));
 
             // Services
             services.AddTransient<IEmailService, EmailService>();
