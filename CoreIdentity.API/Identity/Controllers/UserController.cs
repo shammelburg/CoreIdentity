@@ -54,7 +54,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("insertWithRoles")]
+        [Route("insertWithRole")]
         public async Task<IActionResult> Post([FromBody]UserViewModel model)
         {
             if (!ModelState.IsValid)
@@ -88,7 +88,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="Id"></param>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPut]
         [Route("update/{Id}")]
         public async Task<IActionResult> Put(string Id, [FromBody]EditUserViewModel model)
         {
