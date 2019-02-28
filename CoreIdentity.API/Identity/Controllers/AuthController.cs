@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -14,6 +13,8 @@ using CoreIdentity.API.Helpers;
 using CoreIdentity.API.Identity.Helper;
 using CoreIdentity.API.Identity.ViewModels;
 using CoreIdentity.API.Services;
+using CoreIdentity.API.Settings;
+using Microsoft.Extensions.Options;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
@@ -25,38 +26,40 @@ namespace CoreIdentity.API.Identity.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
+        private readonly ClientAppSettings _client;
 
         public AuthController(
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
-            IEmailService emailService
+            IEmailService emailService,
+            IOptions<ClientAppSettings> client
             )
         {
             this._userManager = userManager;
             this._roleManager = roleManager;
             this._configuration = configuration;
             this._emailService = emailService;
+            this._client = client.Value;
         }
 
         /// <summary>
         /// Confirms a user email address
         /// </summary>
-        /// <param name="userId">The user Id</param>
-        /// <param name="code">The token generate from the email</param>
+        /// <param name="model">ConfirmEmailViewModel</param>
         /// <returns></returns>
-        [HttpGet]
+        [HttpPost]
         [Route("confirmEmail")]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        public async Task<IActionResult> ConfirmEmail([FromBody]ConfirmEmailViewModel model)
         {
-            if (userId == null || code == null)
+            if (model.UserId == null || model.Code == null)
                 return BadRequest("Error retrieving information!");
 
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.FindByIdAsync(model.UserId);
             if (user == null)
                 return BadRequest("Could not find user!");
 
-            var result = await _userManager.ConfirmEmailAsync(user, code);
+            var result = await _userManager.ConfirmEmailAsync(user, model.Code);
             if (result.Succeeded)
                 return Ok(result);
             return BadRequest(result);
@@ -80,15 +83,13 @@ namespace CoreIdentity.API.Identity.Controllers
             if (result.Succeeded)
             {
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
+                var callbackUrl = $"{_client.Url}{_client.EmailConfirmationPath}?uid={user.Id}&code={System.Net.WebUtility.UrlEncode(code)}";
 
                 await _emailService.SendEmailConfirmationAsync(model.Email, callbackUrl);
 
                 return Ok(new
                 {
-                    Result = result,
-                    // do not send back - testing only
-                    CallbackUrl = callbackUrl
+                    //CallbackUrl = callbackUrl
                 });
             }
 
@@ -115,7 +116,13 @@ namespace CoreIdentity.API.Identity.Controllers
 
             // Only allow login if email is confirmed
             if (!user.EmailConfirmed)
-                return BadRequest("You must have a confirmed email to log in.");
+            {
+                return Ok(new
+                {
+                    Verify = true,
+                });
+            }
+                
 
             // Used as user lock
             if (user.LockoutEnabled)
@@ -127,8 +134,7 @@ namespace CoreIdentity.API.Identity.Controllers
                 {
                     return Ok(new
                     {
-                        TwoFA = user.TwoFactorEnabled,
-                        Url = "api/auth/2fa"
+                        tfa = true
                     });
                 }
                 else
@@ -189,21 +195,16 @@ namespace CoreIdentity.API.Identity.Controllers
 
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
-                return BadRequest("Could not continue with this request. (E1)");
+                return BadRequest("Please verify your email address.");
 
-            // For more information on how to enable account confirmation and password reset please
-            // visit https://go.microsoft.com/fwlink/?LinkID=532713
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
-            //await _emailSender.SendEmailAsync(model.Email, "Reset Password",
-            //   $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>");
+            var callbackUrl = $"{_client.Url}{_client.ResetPasswordPath}?uid={user.Id}&code={System.Net.WebUtility.UrlEncode(code)}";
 
             await _emailService.SendPasswordResetAsync(model.Email, callbackUrl);
 
             return Ok(new
             {
-                Message = $"Please reset your password by clicking here: <a href=''>link</a>",
-                Code = code
+                //CallbackUrl = callbackUrl
             });
         }
 
@@ -232,7 +233,29 @@ namespace CoreIdentity.API.Identity.Controllers
             }
             return BadRequest(result);
         }
-        
+
+        /// <summary>
+        /// Resend email verification email
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("resendVerificationEmail")]
+        public async Task<IActionResult> resendVerificationEmail([FromBody]UserViewModel model)
+        {
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+                return BadRequest("Could not find user!");
+
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var callbackUrl = $"{_client.Url}{_client.EmailConfirmationPath}?uid={user.Id}&code={System.Net.WebUtility.UrlEncode(code)}";
+            await _emailService.SendEmailConfirmationAsync(user.Email, callbackUrl);
+
+            return Ok(new
+            {
+                //CallbackUrl = callbackUrl
+            });
+        }
+
         private async Task<JwtSecurityToken> CreateJwtToken(IdentityUser user)
         {
             var userClaims = await _userManager.GetClaimsAsync(user);
@@ -257,7 +280,7 @@ namespace CoreIdentity.API.Identity.Controllers
             }
             .Union(userClaims)
             .Union(roleClaims);
-            
+
             var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSecurityToken:Key"]));
             var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
 

@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using CoreIdentity.API.Identity.Helper;
 using CoreIdentity.API.Identity.ViewModels;
 using CoreIdentity.API.Services;
+using CoreIdentity.API.Settings;
+using Microsoft.Extensions.Options;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
@@ -20,6 +22,7 @@ namespace CoreIdentity.API.Identity.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UrlEncoder _urlEncoder;
         private readonly IEmailService _emailService;
+        private readonly ClientAppSettings _client;
 
         private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
 
@@ -27,13 +30,15 @@ namespace CoreIdentity.API.Identity.Controllers
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
             UrlEncoder urlEncoder,
-            IEmailService emailService
+            IEmailService emailService,
+            IOptions<ClientAppSettings> client
             )
         {
             this._userManager = userManager;
             this._roleManager = roleManager;
             this._urlEncoder = urlEncoder;
             this._emailService = emailService;
+            this._client = client.Value;
         }
 
         /// <summary>
@@ -134,15 +139,12 @@ namespace CoreIdentity.API.Identity.Controllers
                 return BadRequest("Could not find user!");
 
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var callbackUrl = Url.EmailConfirmationLink(user.Id, code, Request.Scheme);
-
+            var callbackUrl = $"{_client.Url}{_client.EmailConfirmationPath}?uid={user.Id}&code={System.Net.WebUtility.UrlEncode(code)}";
             await _emailService.SendEmailConfirmationAsync(user.Email, callbackUrl);
 
             return Ok(new
             {
-                Message = "Verification email sent. Please check your email.",
-                // do not send back - testing only
-                CallbackUrl = callbackUrl
+                //CallbackUrl = callbackUrl
             });
         }
 
