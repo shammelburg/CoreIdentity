@@ -17,9 +17,9 @@ namespace CoreIdentity.API.Helpers
                 .AddDefaultTokenProviders();
 
             // Initialise
-            // add-migration init
+            // add-migration init -Context SecurityContext
             // update or create DB
-            // update-database
+            // update-database -Context SecurityContext
             // 1. Tools->NuGet Package Manager -> Package Manager Console.
             // 2. Run PM> Add - Migration MyFirstMigration to scaffold a migration to create the initial set of tables for our model. If we receive an error, which states the term `add - migration' is not recognized as the name of a cmdlet, then close and reopen Visual Studio.
             // 2. Run PM > Update - Database to apply the new migration to the database.Since our database doesn't exist yet, it will be created for us before the migration is applied.
