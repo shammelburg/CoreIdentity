@@ -80,7 +80,7 @@ namespace CoreIdentity.API.Services
                     client.Credentials = new NetworkCredential(_email.UserName, _email.Password);
                 }
 
-                PrepareMailMessage("CoreIdentity", "INTERNAL SERVER ERROR", $"{ex.ToString()}", _email.From, _email.To, mailMessage);
+                PrepareMailMessage(_email.DisplayName, "INTERNAL SERVER ERROR", $"{ex.ToString()}", _email.From, _email.To, mailMessage);
 
                 await client.SendMailAsync(mailMessage);
             }
@@ -97,7 +97,7 @@ namespace CoreIdentity.API.Services
                     client.Credentials = new NetworkCredential(_email.UserName, _email.Password);
                 }
 
-                PrepareMailMessage("CoreIdentity", "Reset your email", $"{ex.ToString()}", _email.From, _email.To, mailMessage);
+                PrepareMailMessage(_email.DisplayName, "Reset your email", $"{ex.ToString()}", _email.From, _email.To, mailMessage);
 
                 await client.SendMailAsync(mailMessage);
             }
