@@ -46,7 +46,7 @@ namespace CoreIdentity.API.Services
                     client.Credentials = new NetworkCredential(_email.UserName, _email.Password);
                 }
 
-                PrepareMailMessage("CoreIdentity", "Confirm your email", $"Please confirm your password by clicking here: <a href='{CallbackUrl}'>link</a>", _email.From, EmailAddress, mailMessage);
+                PrepareMailMessage(_email.DisplayName, "Confirm your email", $"Please confirm your password by clicking here: <a href='{CallbackUrl}'>link</a>", _email.From, EmailAddress, mailMessage);
 
                 await client.SendMailAsync(mailMessage);
             }
@@ -63,7 +63,7 @@ namespace CoreIdentity.API.Services
                     client.Credentials = new NetworkCredential(_email.UserName, _email.Password);
                 }
 
-                PrepareMailMessage("CoreIdentity", "Reset your password", $"Please reset your password by clicking here: <a href='{CallbackUrl}'>link</a>", _email.From, EmailAddress, mailMessage);
+                PrepareMailMessage(_email.DisplayName, "Reset your password", $"Please reset your password by clicking here: <a href='{CallbackUrl}'>link</a>", _email.From, EmailAddress, mailMessage);
 
                 await client.SendMailAsync(mailMessage);
             }
