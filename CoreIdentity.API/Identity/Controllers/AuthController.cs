@@ -14,6 +14,7 @@ using CoreIdentity.API.Identity.ViewModels;
 using CoreIdentity.API.Services;
 using CoreIdentity.API.Settings;
 using Microsoft.Extensions.Options;
+using CoreIdentity.API.Identity.Models;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
@@ -51,6 +52,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="model">ConfirmEmailViewModel</param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(IdentityResult), 200)]
         [Route("confirmEmail")]
         public async Task<IActionResult> ConfirmEmail([FromBody]ConfirmEmailViewModel model)
         {
@@ -73,6 +75,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="model">RegisterViewModel</param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(IdentityResult), 200)]
         [Route("register")]
         public async Task<IActionResult> Register([FromBody]RegisterViewModel model)
         {
@@ -109,6 +112,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="model">LoginViewModel</param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(TokenModel), 200)]
         [Route("token")]
         public async Task<IActionResult> CreateToken([FromBody]LoginViewModel model)
         {
@@ -116,15 +120,17 @@ namespace CoreIdentity.API.Identity.Controllers
             if (user == null)
                 return BadRequest("Invalid login attempt.");
 
+            var tokenModel = new TokenModel()
+            {
+                HasVerifiedEmail = false
+            };
+
             // Only allow login if email is confirmed
             if (!user.EmailConfirmed)
             {
-                return Ok(new
-                {
-                    Verify = true,
-                });
+                return Ok(tokenModel);
             }
-                
+
 
             // Used as user lock
             if (user.LockoutEnabled)
@@ -132,22 +138,23 @@ namespace CoreIdentity.API.Identity.Controllers
 
             if (await _userManager.CheckPasswordAsync(user, model.Password))
             {
+                tokenModel.HasVerifiedEmail = true;
+
                 if (user.TwoFactorEnabled)
                 {
-                    return Ok(new
-                    {
-                        tfa = true
-                    });
+                    tokenModel.TFAEnabled = true;
+                    return Ok(tokenModel);
                 }
                 else
                 {
                     JwtSecurityToken jwtSecurityToken = await CreateJwtToken(user);
-                    return Ok(new
-                    {
-                        Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
-                        Expiration = jwtSecurityToken.ValidTo,
-                        EmailConfirmed = user.EmailConfirmed
-                    });
+                    tokenModel.TFAEnabled = false;
+                    tokenModel.Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+                    tokenModel.Expiration = jwtSecurityToken.ValidTo;
+
+                    var roles = await _userManager.GetRolesAsync(user);
+                    tokenModel.Roles = roles.ToArray();
+                    return Ok(tokenModel);
                 }
             }
 
@@ -160,6 +167,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="model">LoginWith2faViewModel</param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(TokenModel), 200)]
         [Route("tfa")]
         public async Task<IActionResult> LoginWith2fa([FromBody]LoginWith2faViewModel model)
         {
@@ -173,12 +181,19 @@ namespace CoreIdentity.API.Identity.Controllers
             if (await _userManager.VerifyTwoFactorTokenAsync(user, "Authenticator", model.TwoFactorCode))
             {
                 JwtSecurityToken jwtSecurityToken = await CreateJwtToken(user);
-                return Ok(new
+
+                var roles = await _userManager.GetRolesAsync(user);
+
+                var tokenModel = new TokenModel()
                 {
+                    HasVerifiedEmail = true,
+                    TFAEnabled = false,
                     Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
                     Expiration = jwtSecurityToken.ValidTo,
-                    EmailConfirmed = user.EmailConfirmed
-                });
+                    Roles = roles.ToArray()
+            };
+
+                return Ok(tokenModel);
             }
             return BadRequest("Unable to verify Authenticator Code!");
         }
@@ -216,6 +231,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="model">ResetPasswordViewModel</param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(IdentityResult), 200)]
         [Route("resetPassword")]
         public async Task<IActionResult> ResetPassword([FromBody]ResetPasswordViewModel model)
         {
@@ -237,10 +253,11 @@ namespace CoreIdentity.API.Identity.Controllers
         }
 
         /// <summary>
-        /// Resend email verification email
+        /// Resend email verification email with token link
         /// </summary>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(200)]
         [Route("resendVerificationEmail")]
         public async Task<IActionResult> resendVerificationEmail([FromBody]UserViewModel model)
         {
@@ -252,10 +269,7 @@ namespace CoreIdentity.API.Identity.Controllers
             var callbackUrl = $"{_client.Url}{_client.EmailConfirmationPath}?uid={user.Id}&code={System.Net.WebUtility.UrlEncode(code)}";
             await _emailService.SendEmailConfirmationAsync(user.Email, callbackUrl);
 
-            return Ok(new
-            {
-                //CallbackUrl = callbackUrl
-            });
+            return Ok();
         }
 
         private async Task<JwtSecurityToken> CreateJwtToken(IdentityUser user)
