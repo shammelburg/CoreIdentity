@@ -38,6 +38,12 @@ namespace CoreIdentity.API
         {
             // Identity
             services.AddDbContext<SecurityContext>(options => options.UseSqlServer(Configuration["ConnectionStrings:Default"]));
+
+            // Tools->NuGet Package Manager -> Package Manager Console
+            // Initialise
+            // add-migration init -Context SecurityContext
+            // update or create DB
+            // update-database -Context SecurityContext
             IdentityHelper.ConfigureService(services);
 
             // Helpers
