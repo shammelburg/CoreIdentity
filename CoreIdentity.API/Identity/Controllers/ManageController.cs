@@ -24,6 +24,7 @@ namespace CoreIdentity.API.Identity.Controllers
         private readonly UrlEncoder _urlEncoder;
         private readonly IEmailService _emailService;
         private readonly ClientAppSettings _client;
+        private readonly QRCodeSettings _qr;
 
         private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
 
@@ -32,7 +33,8 @@ namespace CoreIdentity.API.Identity.Controllers
             RoleManager<IdentityRole> roleManager,
             UrlEncoder urlEncoder,
             IEmailService emailService,
-            IOptions<ClientAppSettings> client
+            IOptions<ClientAppSettings> client,
+            IOptions<QRCodeSettings> qr
             )
         {
             this._userManager = userManager;
@@ -40,6 +42,7 @@ namespace CoreIdentity.API.Identity.Controllers
             this._urlEncoder = urlEncoder;
             this._emailService = emailService;
             this._client = client.Value;
+            this._qr = qr.Value;
         }
 
         /// <summary>
@@ -321,7 +324,7 @@ namespace CoreIdentity.API.Identity.Controllers
         {
             return string.Format(
                 AuthenticatorUriFormat,
-                _urlEncoder.Encode("CoreIdentity.API"),
+                _urlEncoder.Encode(_qr.AppName),
                 _urlEncoder.Encode(email),
                 unformattedKey);
         }
