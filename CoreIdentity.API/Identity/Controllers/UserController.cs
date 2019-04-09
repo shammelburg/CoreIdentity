@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreIdentity.API.Identity.ViewModels;
+using System.Collections.Generic;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
@@ -30,6 +31,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<IdentityUser>), 200)]
         [Route("get")]
         public IActionResult Get() => Ok(_userManager.Users);
 
@@ -39,6 +41,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="Id"></param>
         /// <returns></returns>
         [HttpGet]
+        [ProducesResponseType(typeof(IdentityUser), 200)]
         [Route("get/{Id}")]
         public IActionResult Get(string Id)
         {
@@ -54,6 +57,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(IdentityResult), 200)]
         [Route("insertWithRole")]
         public async Task<IActionResult> Post([FromBody]UserViewModel model)
         {
@@ -89,6 +93,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
+        [ProducesResponseType(typeof(IdentityResult), 200)]
         [Route("update/{Id}")]
         public async Task<IActionResult> Put(string Id, [FromBody]EditUserViewModel model)
         {
@@ -119,6 +124,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="Id"></param>
         /// <returns></returns>
         [HttpDelete]
+        [ProducesResponseType(typeof(IdentityResult), 200)]
         [Route("delete/{Id}")]
         public async Task<IActionResult> Delete(string Id)
         {

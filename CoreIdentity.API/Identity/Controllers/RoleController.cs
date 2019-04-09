@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
 using CoreIdentity.API.Identity.ViewModels;
+using System.Collections.Generic;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
@@ -25,6 +26,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<IdentityRole>), 200)]
         [Route("get")]
         public IActionResult Get() => Ok(_roleManager.Roles);
 
@@ -34,6 +36,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(IdentityResult), 200)]
         [Route("insert")]
         public async Task<IActionResult> Post([FromBody]RoleViewModel model)
         {
@@ -60,6 +63,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut]
+        [ProducesResponseType(typeof(IdentityResult), 200)]
         [Route("update/{Id}")]
         public async Task<IActionResult> Put(int Id, [FromBody]RoleViewModel model)
         {
@@ -81,6 +85,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="Id"></param>
         /// <returns></returns>
         [HttpDelete]
+        [ProducesResponseType(typeof(IdentityResult), 200)]
         [Route("delete/{Id}")]
         public async Task<IActionResult> Delete(string Id)
         {

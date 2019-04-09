@@ -9,6 +9,8 @@ using CoreIdentity.API.Identity.ViewModels;
 using CoreIdentity.API.Services;
 using CoreIdentity.API.Settings;
 using Microsoft.Extensions.Options;
+using CoreIdentity.API.Identity.Models;
+using System.Collections.Generic;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
@@ -45,12 +47,13 @@ namespace CoreIdentity.API.Identity.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [ProducesResponseType(typeof(UserModel), 200)]
         [Route("userInfo")]
         public async Task<IActionResult> UserInfo()
         {
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
 
-            var userModel = new
+            var userModel = new UserModel
             {
                 Email = user.Email,
                 EmailConfirmed = user.EmailConfirmed,
@@ -66,6 +69,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [ProducesResponseType(typeof(TwoFactorAuthenticationViewModel), 200)]
         [Route("twoFactorAuthentication")]
         public async Task<IActionResult> TwoFactorAuthentication()
         {
@@ -77,7 +81,7 @@ namespace CoreIdentity.API.Identity.Controllers
             {
                 HasAuthenticator = await _userManager.GetAuthenticatorKeyAsync(user) != null,
                 Is2faEnabled = user.TwoFactorEnabled,
-                RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user),
+                RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user)
             };
 
             return Ok(model);
@@ -89,6 +93,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// </summary>
         /// <returns>QR Code</returns>
         [HttpGet]
+        [ProducesResponseType(typeof(EnableAuthenticatorViewModel), 200)]
         [Route("enableAuthenticator")]
         public async Task<IActionResult> EnableAuthenticator()
         {
@@ -108,6 +113,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="model">ChangePasswordViewModel</param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(IdentityResult), 200)]
         [Route("changePassword")]
         public async Task<IActionResult> ChangePassword([FromBody]ChangePasswordViewModel model)
         {
@@ -130,6 +136,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(200)]
         [Route("sendVerificationEmail")]
         public async Task<IActionResult> SendVerificationEmail()
         {
@@ -139,12 +146,10 @@ namespace CoreIdentity.API.Identity.Controllers
 
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var callbackUrl = $"{_client.Url}{_client.EmailConfirmationPath}?uid={user.Id}&code={System.Net.WebUtility.UrlEncode(code)}";
+
             await _emailService.SendEmailConfirmationAsync(user.Email, callbackUrl);
 
-            return Ok(new
-            {
-                //CallbackUrl = callbackUrl
-            });
+            return Ok();
         }
 
         /// <summary>
@@ -153,6 +158,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="model">SetPasswordViewModel</param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(IdentityResult), 200)]
         [Route("setPassword")]
         public async Task<IActionResult> SetPassword([FromBody]SetPasswordViewModel model)
         {
@@ -176,6 +182,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(IdentityResult), 200)]
         [Route("disableTfa")]
         public async Task<IActionResult> Disable2fa()
         {
@@ -200,6 +207,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="model">EnableAuthenticatorViewModel</param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(IEnumerable<string>), 200)]
         [Route("enableAuthenticator")]
         public async Task<IActionResult> EnableAuthenticator([FromBody]EnableAuthenticatorViewModel model)
         {
@@ -252,6 +260,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(200)]
         [Route("resetAuthenticator")]
         public async Task<IActionResult> ResetAuthenticator()
         {
@@ -270,6 +279,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(ShowRecoveryCodesViewModel), 200)]
         [Route("generateRecoveryCodes")]
         public async Task<IActionResult> GenerateRecoveryCodes()
         {

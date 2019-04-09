@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreIdentity.API.Identity.ViewModels;
+using System.Collections.Generic;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
@@ -29,6 +30,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="Id"></param>
         /// <returns></returns>
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<string>), 200)]
         [Route("get/{Id}")]
         public async Task<IActionResult> Get(string Id)
         {
@@ -42,6 +44,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(typeof(IdentityResult), 200)]
         [Route("add")]
         public async Task<IActionResult> Post([FromBody]UserViewModel model)
         {
@@ -71,6 +74,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="RoleId"></param>
         /// <returns></returns>
         [HttpDelete]
+        [ProducesResponseType(typeof(IdentityResult), 200)]
         [Route("delete/{Id}/{RoleId}")]
         public async Task<IActionResult> Delete(string Id, string RoleId)
         {

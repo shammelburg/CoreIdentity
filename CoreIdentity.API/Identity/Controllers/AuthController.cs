@@ -92,10 +92,7 @@ namespace CoreIdentity.API.Identity.Controllers
 
                 await _emailService.SendEmailConfirmationAsync(model.Email, callbackUrl);
 
-                return Ok(new
-                {
-                    //CallbackUrl = callbackUrl
-                });
+                return Ok();
             }
 
             foreach (var error in result.Errors)
@@ -103,7 +100,7 @@ namespace CoreIdentity.API.Identity.Controllers
                 ModelState.AddModelError("error", error.Description);
             }
 
-            return BadRequest(result);
+            return BadRequest(ModelState);
         }
 
         /// <summary>
