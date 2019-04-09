@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using CoreIdentity.API.Identity.ViewModels;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
@@ -37,11 +38,12 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(IdentityResult), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("insert")]
         public async Task<IActionResult> Post([FromBody]RoleViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
             IdentityRole identityRole = new IdentityRole
             {
@@ -53,7 +55,7 @@ namespace CoreIdentity.API.Identity.Controllers
             {
                 return Ok(result);
             }
-            return BadRequest(result);
+            return BadRequest(result.Errors.Select(x => x.Description));
         }
 
         /// <summary>
@@ -64,6 +66,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPut]
         [ProducesResponseType(typeof(IdentityResult), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("update/{Id}")]
         public async Task<IActionResult> Put(int Id, [FromBody]RoleViewModel model)
         {
@@ -76,7 +79,7 @@ namespace CoreIdentity.API.Identity.Controllers
             {
                 return Ok(result);
             }
-            return BadRequest(result);
+            return BadRequest(result.Errors.Select(x => x.Description));
         }
 
         /// <summary>
@@ -86,22 +89,23 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpDelete]
         [ProducesResponseType(typeof(IdentityResult), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("delete/{Id}")]
         public async Task<IActionResult> Delete(string Id)
         {
             if (String.IsNullOrEmpty(Id))
-                return BadRequest("Could not complete request!");
+                return BadRequest(new string[] { "Could not complete request!" });
 
             IdentityRole identityRole = await _roleManager.FindByIdAsync(Id);
             if (identityRole == null)
-                return BadRequest("Could not find role!");
+                return BadRequest(new string[] { "Could not find role!" });
 
             IdentityResult result = _roleManager.DeleteAsync(identityRole).Result;
             if (result.Succeeded)
             {
                 return Ok(result);
             }
-            return BadRequest(result);
+            return BadRequest(result.Errors.Select(x => x.Description));
         }
     }
 }

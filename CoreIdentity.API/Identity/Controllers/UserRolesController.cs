@@ -45,26 +45,27 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(IdentityResult), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("add")]
         public async Task<IActionResult> Post([FromBody]UserViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
             IdentityUser user = await _userManager.FindByIdAsync(model.Id);
             if (user == null)
-                return BadRequest("Could not find user!");
+                return BadRequest(new string[] { "Could not find user!" });
 
             IdentityRole role = await _roleManager.FindByIdAsync(model.ApplicationRoleId);
             if (role == null)
-                return BadRequest("Could not find role!");
+                return BadRequest(new string[] { "Could not find role!" });
 
             IdentityResult result = await _userManager.AddToRoleAsync(user, role.Name);
             if (result.Succeeded)
             {
                 return Ok(result);
             }
-            return BadRequest(result);
+            return BadRequest(result.Errors.Select(x => x.Description));
         }
 
         /// <summary>
@@ -75,26 +76,27 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpDelete]
         [ProducesResponseType(typeof(IdentityResult), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("delete/{Id}/{RoleId}")]
         public async Task<IActionResult> Delete(string Id, string RoleId)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
             IdentityUser user = await _userManager.FindByIdAsync(Id);
             if (user == null)
-                return BadRequest("Could not find user!");
+                return BadRequest(new string[] { "Could not find user!" });
 
             IdentityRole role = await _roleManager.FindByIdAsync(RoleId);
             if (user == null)
-                return BadRequest("Could not find role!");
+                return BadRequest(new string[] { "Could not find role!" });
 
             IdentityResult result = await _userManager.RemoveFromRoleAsync(user, role.Name);
             if (result.Succeeded)
             {
                 return Ok(result);
             }
-            return BadRequest(result);
+            return BadRequest(result.Errors.Select(x => x.Description));
         }
     }
 }

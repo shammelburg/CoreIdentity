@@ -53,20 +53,25 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(IdentityResult), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("confirmEmail")]
         public async Task<IActionResult> ConfirmEmail([FromBody]ConfirmEmailViewModel model)
         {
+
             if (model.UserId == null || model.Code == null)
-                return BadRequest("Error retrieving information!");
+            {
+                return BadRequest(new string[] { "Error retrieving information!" });
+            }
 
             var user = await _userManager.FindByIdAsync(model.UserId);
             if (user == null)
-                return BadRequest("Could not find user!");
+                return BadRequest(new string[] { "Could not find user!" });
 
             var result = await _userManager.ConfirmEmailAsync(user, model.Code);
             if (result.Succeeded)
                 return Ok(result);
-            return BadRequest(result);
+
+            return BadRequest(result.Errors.Select(x => x.Description));
         }
 
         /// <summary>
@@ -76,11 +81,12 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(IdentityResult), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("register")]
         public async Task<IActionResult> Register([FromBody]RegisterViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
             var user = new IdentityUser { UserName = model.Email, Email = model.Email };
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -95,12 +101,7 @@ namespace CoreIdentity.API.Identity.Controllers
                 return Ok();
             }
 
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError("error", error.Description);
-            }
-
-            return BadRequest(ModelState);
+            return BadRequest(result.Errors.Select(x => x.Description));
         }
 
         /// <summary>
@@ -110,12 +111,13 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(TokenModel), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("token")]
         public async Task<IActionResult> CreateToken([FromBody]LoginViewModel model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
-                return BadRequest("Invalid login attempt.");
+                return BadRequest(new string[] { "Invalid credentials." });
 
             var tokenModel = new TokenModel()
             {
@@ -128,10 +130,9 @@ namespace CoreIdentity.API.Identity.Controllers
                 return Ok(tokenModel);
             }
 
-
             // Used as user lock
             if (user.LockoutEnabled)
-                return BadRequest("This account has been locked.");
+                return BadRequest(new string[] { "This account has been locked." });
 
             if (await _userManager.CheckPasswordAsync(user, model.Password))
             {
@@ -155,7 +156,7 @@ namespace CoreIdentity.API.Identity.Controllers
                 }
             }
 
-            return BadRequest("Invalid login attempt.");
+            return BadRequest(new string[] { "Invalid login attempt." });
         }
 
         /// <summary>
@@ -165,15 +166,16 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(TokenModel), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("tfa")]
         public async Task<IActionResult> LoginWith2fa([FromBody]LoginWith2faViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
-                return BadRequest("Could not continue with this request. (E1)");
+                return BadRequest(new string[] { "Invalid credentials." });
 
             if (await _userManager.VerifyTwoFactorTokenAsync(user, "Authenticator", model.TwoFactorCode))
             {
@@ -188,11 +190,11 @@ namespace CoreIdentity.API.Identity.Controllers
                     Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
                     Expiration = jwtSecurityToken.ValidTo,
                     Roles = roles.ToArray()
-            };
+                };
 
                 return Ok(tokenModel);
             }
-            return BadRequest("Unable to verify Authenticator Code!");
+            return BadRequest(new string[] { "Unable to verify Authenticator Code!" });
         }
 
         /// <summary>
@@ -201,25 +203,24 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <param name="model">ForgotPasswordViewModel</param>
         /// <returns></returns>
         [HttpPost]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("forgotPassword")]
         public async Task<IActionResult> ForgotPassword([FromBody]ForgotPasswordViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
-                return BadRequest("Please verify your email address.");
+                return BadRequest(new string[] { "Please verify your email address." });
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
             var callbackUrl = $"{_client.Url}{_client.ResetPasswordPath}?uid={user.Id}&code={System.Net.WebUtility.UrlEncode(code)}";
 
             await _emailService.SendPasswordResetAsync(model.Email, callbackUrl);
 
-            return Ok(new
-            {
-                //CallbackUrl = callbackUrl
-            });
+            return Ok();
         }
 
         /// <summary>
@@ -229,24 +230,25 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(IdentityResult), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("resetPassword")]
         public async Task<IActionResult> ResetPassword([FromBody]ResetPasswordViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
             var user = await _userManager.FindByIdAsync(model.UserId);
             if (user == null)
             {
                 // Don't reveal that the user does not exist
-                return BadRequest("Could not continue with this request. (E1)");
+                return BadRequest(new string[] { "Invalid credentials." });
             }
             var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
             if (result.Succeeded)
             {
                 return Ok(result);
             }
-            return BadRequest(result);
+            return BadRequest(result.Errors.Select(x => x.Description));
         }
 
         /// <summary>
@@ -255,12 +257,13 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("resendVerificationEmail")]
         public async Task<IActionResult> resendVerificationEmail([FromBody]UserViewModel model)
         {
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
-                return BadRequest("Could not find user!");
+                return BadRequest(new string[] { "Could not find user!" });
 
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var callbackUrl = $"{_client.Url}{_client.EmailConfirmationPath}?uid={user.Id}&code={System.Net.WebUtility.UrlEncode(code)}";

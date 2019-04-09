@@ -42,11 +42,12 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(IdentityUser), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("get/{Id}")]
         public IActionResult Get(string Id)
         {
             if (String.IsNullOrEmpty(Id))
-                return BadRequest("Empty parameter!");
+                return BadRequest(new string[] { "Empty parameter!" });
 
             return Ok(_userManager.Users.Where(user => user.Id == Id));
         }
@@ -58,11 +59,12 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(IdentityResult), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("insertWithRole")]
         public async Task<IActionResult> Post([FromBody]UserViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
             IdentityUser user = new IdentityUser
             {
@@ -72,7 +74,7 @@ namespace CoreIdentity.API.Identity.Controllers
 
             IdentityRole role = await _roleManager.FindByIdAsync(model.ApplicationRoleId);
             if (role == null)
-                return BadRequest("Could not find role!");
+                return BadRequest(new string[] { "Could not find role!" });
 
             IdentityResult result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
@@ -83,7 +85,7 @@ namespace CoreIdentity.API.Identity.Controllers
                     return Ok(result2);
                 }
             }
-            return BadRequest(result);
+            return BadRequest(result.Errors.Select(x => x.Description));
         }
 
         /// <summary>
@@ -94,15 +96,16 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPut]
         [ProducesResponseType(typeof(IdentityResult), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("update/{Id}")]
         public async Task<IActionResult> Put(string Id, [FromBody]EditUserViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
             IdentityUser user = await _userManager.FindByIdAsync(Id);
             if (user == null)
-                return BadRequest("Could not find user!");
+                return BadRequest(new string[] { "Could not find user!" });
 
             // Add more fields to update
             user.Email = model.Email;
@@ -115,7 +118,7 @@ namespace CoreIdentity.API.Identity.Controllers
             {
                 return Ok(result);
             }
-            return BadRequest(result);
+            return BadRequest(result.Errors.Select(x => x.Description));
         }
 
         /// <summary>
@@ -125,22 +128,23 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpDelete]
         [ProducesResponseType(typeof(IdentityResult), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("delete/{Id}")]
         public async Task<IActionResult> Delete(string Id)
         {
             if (!String.IsNullOrEmpty(Id))
-                return BadRequest("Empty parameter!");
+                return BadRequest(new string[] { "Empty parameter!" });
 
             IdentityUser user = await _userManager.FindByIdAsync(Id);
             if (user == null)
-                return BadRequest("Could not find user!");
+                return BadRequest(new string[] { "Could not find user!" });
 
             IdentityResult result = await _userManager.DeleteAsync(user);
             if (result.Succeeded)
             {
                 return Ok(result);
             }
-            return BadRequest(result);
+            return BadRequest(result.Errors.Select(x => x.Description));
         }
     }
 }

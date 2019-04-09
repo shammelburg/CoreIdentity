@@ -70,12 +70,13 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(typeof(TwoFactorAuthenticationViewModel), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("twoFactorAuthentication")]
         public async Task<IActionResult> TwoFactorAuthentication()
         {
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
             if (user == null)
-                return BadRequest("Could not find user!");
+                return BadRequest(new string[] { "Could not find user!" });
 
             var model = new TwoFactorAuthenticationViewModel
             {
@@ -94,12 +95,13 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns>QR Code</returns>
         [HttpGet]
         [ProducesResponseType(typeof(EnableAuthenticatorViewModel), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("enableAuthenticator")]
         public async Task<IActionResult> EnableAuthenticator()
         {
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
             if (user == null)
-                return BadRequest("Could not find user!");
+                return BadRequest(new string[] { "Could not find user!" });
 
             var model = new EnableAuthenticatorViewModel();
             await LoadSharedKeyAndQrCodeUriAsync(user, model);
@@ -114,19 +116,20 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(IdentityResult), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("changePassword")]
         public async Task<IActionResult> ChangePassword([FromBody]ChangePasswordViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+                return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
             if (user == null)
-                return BadRequest("Could not find user!");
+                return BadRequest(new string[] { "Could not find user!" });
 
             var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
             if (!changePasswordResult.Succeeded)
-                return BadRequest("Could not change password!");
+                return BadRequest(new string[] { "Could not change password!" });
 
             return Ok(changePasswordResult);
         }
@@ -137,12 +140,13 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("sendVerificationEmail")]
         public async Task<IActionResult> SendVerificationEmail()
         {
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
             if (user == null)
-                return BadRequest("Could not find user!");
+                return BadRequest(new string[] { "Could not find user!" });
 
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var callbackUrl = $"{_client.Url}{_client.EmailConfirmationPath}?uid={user.Id}&code={System.Net.WebUtility.UrlEncode(code)}";
@@ -159,6 +163,7 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(IdentityResult), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("setPassword")]
         public async Task<IActionResult> SetPassword([FromBody]SetPasswordViewModel model)
         {
@@ -167,14 +172,14 @@ namespace CoreIdentity.API.Identity.Controllers
 
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
             if (user == null)
-                return BadRequest("Could not find user!");
+                return BadRequest(new string[] { "Could not find user!" });
 
             var addPasswordResult = await _userManager.AddPasswordAsync(user, model.NewPassword);
 
             if (addPasswordResult.Succeeded)
                 return Ok(addPasswordResult);
 
-            return BadRequest(addPasswordResult);
+            return BadRequest(addPasswordResult.Errors.Select(x => x.Description));
         }
 
         /// <summary>
@@ -183,20 +188,17 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(IdentityResult), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("disableTfa")]
         public async Task<IActionResult> Disable2fa()
         {
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
             if (user == null)
-                return BadRequest("Could not find user!");
+                return BadRequest(new string[] { "Could not find user!" });
 
             var disable2faResult = await _userManager.SetTwoFactorEnabledAsync(user, false);
             if (!disable2faResult.Succeeded)
-                return BadRequest(new
-                {
-                    Result = disable2faResult,
-                    Message = $"User with ID {user.Id} has disabled 2fa."
-                });
+                return BadRequest(disable2faResult.Errors.Select(x => x.Description));
 
             return Ok(disable2faResult);
         }
@@ -208,12 +210,13 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(IEnumerable<string>), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("enableAuthenticator")]
         public async Task<IActionResult> EnableAuthenticator([FromBody]EnableAuthenticatorViewModel model)
         {
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
             if (user == null)
-                return BadRequest("Could not find user!");
+                return BadRequest(new string[] { "Could not find user!" });
 
             if (!ModelState.IsValid)
             {
@@ -235,9 +238,7 @@ namespace CoreIdentity.API.Identity.Controllers
             }
 
             await _userManager.SetTwoFactorEnabledAsync(user, true);
-            //_logger.LogInformation("User with ID {UserId} has enabled 2FA with an authenticator app.", user.Id);
             var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
-            //TempData[RecoveryCodesKey] = recoveryCodes.ToArray();
 
             return Ok(recoveryCodes.ToArray());
         }
@@ -261,12 +262,13 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("resetAuthenticator")]
         public async Task<IActionResult> ResetAuthenticator()
         {
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
             if (user == null)
-                return BadRequest("Could not find user!");
+                return BadRequest(new string[] { "Could not find user!" });
 
             await _userManager.SetTwoFactorEnabledAsync(user, false);
             await _userManager.ResetAuthenticatorKeyAsync(user);
@@ -280,18 +282,18 @@ namespace CoreIdentity.API.Identity.Controllers
         /// <returns></returns>
         [HttpPost]
         [ProducesResponseType(typeof(ShowRecoveryCodesViewModel), 200)]
+        [ProducesResponseType(typeof(IEnumerable<string>), 400)]
         [Route("generateRecoveryCodes")]
         public async Task<IActionResult> GenerateRecoveryCodes()
         {
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
             if (user == null)
-                return BadRequest("Could not find user!");
+                return BadRequest(new string[] { "Could not find user!" });
 
             if (!user.TwoFactorEnabled)
-                return BadRequest($"Cannot generate recovery codes for user with ID '{user.Id}' as they do not have 2FA enabled.");
+                return BadRequest(new string[] { $"Cannot generate recovery codes for user with ID '{user.Id}' as they do not have 2FA enabled." });
 
             var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
-            //_logger.LogInformation("User with ID {UserId} has generated new 2FA recovery codes.", user.Id);
 
             var model = new ShowRecoveryCodesViewModel { RecoveryCodes = recoveryCodes.ToArray() };
 
