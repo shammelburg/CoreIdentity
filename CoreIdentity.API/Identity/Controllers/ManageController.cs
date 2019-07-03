@@ -130,11 +130,21 @@ namespace CoreIdentity.API.Identity.Controllers
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
-            var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
-            if (!changePasswordResult.Succeeded)
-                return BadRequest(new string[] { "Could not change password!" });
+            var passwordValidator = new PasswordValidator<IdentityUser>();
+            var result = await passwordValidator.ValidateAsync(_userManager, null, model.NewPassword);
 
-            return Ok(changePasswordResult);
+            if (result.Succeeded)
+            {
+                var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+                if (!changePasswordResult.Succeeded)
+                    return BadRequest(new string[] { "Could not change password!" });
+
+                return Ok(changePasswordResult);
+            }
+            else
+            {
+                return BadRequest(result.Errors.Select(x => x.Description));
+            }
         }
 
         /// <summary>
