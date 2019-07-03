@@ -47,7 +47,7 @@ namespace CoreIdentity.API.Identity.Controllers
 
             IdentityRole identityRole = new IdentityRole
             {
-                Name = model.RoleName
+                Name = model.Name
             };
 
             IdentityResult result = await _roleManager.CreateAsync(identityRole);
@@ -72,7 +72,7 @@ namespace CoreIdentity.API.Identity.Controllers
         {
             IdentityRole identityRole = await _roleManager.FindByIdAsync(model.Id);
 
-            identityRole.Name = model.RoleName;
+            identityRole.Name = model.Name;
 
             IdentityResult result = await _roleManager.UpdateAsync(identityRole);
             if (result.Succeeded)

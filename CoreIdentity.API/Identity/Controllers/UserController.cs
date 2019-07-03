@@ -69,7 +69,9 @@ namespace CoreIdentity.API.Identity.Controllers
             IdentityUser user = new IdentityUser
             {
                 UserName = model.UserName,
-                Email = model.Email
+                Email = model.Email,
+                EmailConfirmed = model.EmailConfirmed,
+                PhoneNumber = model.PhoneNumber
             };
 
             IdentityRole role = await _roleManager.FindByIdAsync(model.ApplicationRoleId);
@@ -109,9 +111,11 @@ namespace CoreIdentity.API.Identity.Controllers
 
             // Add more fields to update
             user.Email = model.Email;
-            user.UserName = model.UserName;
-            // ...
-            // ...
+            user.UserName = model.Email;
+            user.EmailConfirmed = model.EmailConfirmed;
+            user.PhoneNumber = model.PhoneNumber;
+            user.LockoutEnabled = model.LockoutEnabled;
+            user.TwoFactorEnabled = model.TwoFactorEnabled;
 
             IdentityResult result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)

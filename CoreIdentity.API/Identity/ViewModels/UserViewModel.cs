@@ -16,5 +16,7 @@ namespace CoreIdentity.API.Identity.ViewModels
         public string ApplicationRoleId { get; set; }
         public string UserId { get; set; }
         public string RoleId { get; set; }
+        public string PhoneNumber { get; set; }
+        public bool EmailConfirmed { get; set; }
     }
 }
