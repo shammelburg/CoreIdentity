@@ -1,7 +1,7 @@
 # CoreIdentity
 Using ASP.NET Core Identity Web API With JWT, TFA, Swagger, Sendgrid and EF Core
 
-This ASP.NET Core 2.2 Web API uses Identity Tables and JWT to authenticate and authorize users as well as
+This ASP.NET Core 3.1 Web API uses Identity Tables and JWT to authenticate and authorize users as well as
 user, role and userRole management.
 
 This has been tested with Google Postman.
@@ -19,3 +19,5 @@ This project has everything you need to get started with ASP.NET Core Web API.
 - SendGrid (Email) 
 - Error Handling Middleware
 - CORS Middleware
+
+SWAGGER 5.0.0-rc4 - Works locally, need to comment out in startup.cs for production
