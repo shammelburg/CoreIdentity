@@ -1,7 +1,7 @@
 ﻿using CoreIdentity.API.Settings;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System;
-using System.Data.SqlClient;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;

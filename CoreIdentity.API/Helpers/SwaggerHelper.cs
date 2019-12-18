@@ -1,11 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.OpenApi.Models;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace CoreIdentity.API.Helpers
 {
@@ -17,7 +14,7 @@ namespace CoreIdentity.API.Helpers
             // Register the Swagger generator, defining 1 or more Swagger documents
             service.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "Core Identity", Version = "v1", Description = "Using ASP.NET Core Identity Web API With JWT, TFA Authenticator and Swagger" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Core Identity", Version = "v1", Description = "Using ASP.NET Core Identity Web API With JWT, TFA Authenticator and Swagger" });
 
                 // Set the comments path for the Swagger JSON and UI.
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";

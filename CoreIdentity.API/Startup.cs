@@ -1,24 +1,17 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using Swashbuckle.AspNetCore.Swagger;
-using System;
-using System.IO;
-using System.Reflection;
-using System.Text;
+﻿using CoreIdentity.API.Helpers;
 using CoreIdentity.API.Identity;
-using CoreIdentity.API.Settings;
-using CoreIdentity.API.Services;
 using CoreIdentity.API.Middleware;
-using CoreIdentity.API.Helpers;
+using CoreIdentity.API.Services;
+using CoreIdentity.API.Settings;
 using CoreIdentity.Data;
 using CoreIdentity.Data.Interfaces;
 using CoreIdentity.Data.Repos;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace CoreIdentity.API
 {
@@ -64,11 +57,11 @@ namespace CoreIdentity.API
             services.AddDbContextPool<DataContext>(options => options.UseSqlServer(Configuration["ConnectionStrings:Default"]));
             services.AddScoped<IExampleRepo, ExampleRepo>();
 
-            services.AddMvc();
+            services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -78,7 +71,11 @@ namespace CoreIdentity.API
             // Use WhiteList
             // app.UseWhiteListMiddleware(Configuration["AllowedIPs"]);
 
+            app.UseRouting();
+
             app.UseAuthentication();
+            app.UseAuthorization();
+
             app.UseCors("CorsPolicy");
             app.UseErrorHandlingMiddleware();
 
@@ -90,7 +87,10 @@ namespace CoreIdentity.API
                 c.RoutePrefix = "";
             });
 
-            app.UseMvc();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }
