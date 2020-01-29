@@ -150,8 +150,6 @@ namespace CoreIdentity.API.Identity.Controllers
                     tokenModel.Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
                     tokenModel.Expiration = jwtSecurityToken.ValidTo;
 
-                    var roles = await _userManager.GetRolesAsync(user);
-                    tokenModel.Roles = roles.ToArray();
                     return Ok(tokenModel);
                 }
             }
@@ -181,15 +179,12 @@ namespace CoreIdentity.API.Identity.Controllers
             {
                 JwtSecurityToken jwtSecurityToken = await CreateJwtToken(user);
 
-                var roles = await _userManager.GetRolesAsync(user);
-
                 var tokenModel = new TokenModel()
                 {
                     HasVerifiedEmail = true,
                     TFAEnabled = false,
                     Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
-                    Expiration = jwtSecurityToken.ValidTo,
-                    Roles = roles.ToArray()
+                    Expiration = jwtSecurityToken.ValidTo
                 };
 
                 return Ok(tokenModel);
