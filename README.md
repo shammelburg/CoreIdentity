@@ -4,10 +4,6 @@ Using ASP.NET Core Identity Web API With JWT, TFA, Swagger, Sendgrid, EF Core an
 This ASP.NET Core 3.1 Web API uses Identity Tables and JWT to authenticate and authorize users as well as
 user, role and userRole management.
 
-This has been tested with Google Postman.
-
-To view all endpoints, run the project!
-
 This project has everything you need to get started with ASP.NET Core Web API.
 
 - ASP.NET Core Web API
@@ -23,3 +19,10 @@ This project has everything you need to get started with ASP.NET Core Web API.
 - Azure Storage
   - Blob
   - Queue
+
+# Getting Started
+To get started locate the `appsettings.Development.json` and supply your connectionString.
+
+That's it.
+
+To activate emails in the API you can also enter SendGrid account credentials.
