@@ -1,4 +1,5 @@
 ﻿using CoreIdentity.API.Settings;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
 using System;
@@ -11,10 +12,12 @@ namespace CoreIdentity.API.Services
     public class EmailService: IEmailService
     {
         private readonly EmailSettings _email;
+        private readonly IWebHostEnvironment _env;
 
-        public EmailService(IOptions<EmailSettings> email)
+        public EmailService(IOptions<EmailSettings> email, IWebHostEnvironment env)
         {
             _email = email.Value;
+            _env = env;
         }
 
 
@@ -46,7 +49,7 @@ namespace CoreIdentity.API.Services
                     client.Credentials = new NetworkCredential(_email.UserName, _email.Password);
                 }
 
-                PrepareMailMessage(_email.DisplayName, "Confirm your email", $"Please confirm your password by clicking here: <a href='{CallbackUrl}'>link</a>", _email.From, EmailAddress, mailMessage);
+                PrepareMailMessage(_email.DisplayName, "Confirm your email", $"Please confirm your email by clicking here: <a href='{CallbackUrl}'>link</a>", _email.From, EmailAddress, mailMessage);
 
                 await client.SendMailAsync(mailMessage);
             }
@@ -80,7 +83,7 @@ namespace CoreIdentity.API.Services
                     client.Credentials = new NetworkCredential(_email.UserName, _email.Password);
                 }
 
-                PrepareMailMessage(_email.DisplayName, "INTERNAL SERVER ERROR", $"{ex.ToString()}", _email.From, _email.To, mailMessage);
+                PrepareMailMessage(_email.DisplayName, $"({_env.EnvironmentName}) INTERNAL SERVER ERROR", $"{ex.ToString()}", _email.From, _email.To, mailMessage);
 
                 await client.SendMailAsync(mailMessage);
             }
@@ -97,7 +100,7 @@ namespace CoreIdentity.API.Services
                     client.Credentials = new NetworkCredential(_email.UserName, _email.Password);
                 }
 
-                PrepareMailMessage(_email.DisplayName, "Reset your email", $"{ex.ToString()}", _email.From, _email.To, mailMessage);
+                PrepareMailMessage(_email.DisplayName, $"({_env.EnvironmentName}) SQL ERROR", $"{ex.ToString()}", _email.From, _email.To, mailMessage);
 
                 await client.SendMailAsync(mailMessage);
             }
