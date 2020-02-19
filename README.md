@@ -20,4 +20,6 @@ This project has everything you need to get started with ASP.NET Core Web API.
 - Error Handling Middleware
 - CORS Middleware
 
-SWAGGER 5.0.0-rc4 - Works locally, need to comment out in startup.cs for production
+- Azure Storage
+  - Blob
+  - Queue
