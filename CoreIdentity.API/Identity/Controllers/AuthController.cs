@@ -148,7 +148,6 @@ namespace CoreIdentity.API.Identity.Controllers
                     JwtSecurityToken jwtSecurityToken = await CreateJwtToken(user);
                     tokenModel.TFAEnabled = false;
                     tokenModel.Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
-                    tokenModel.Expiration = jwtSecurityToken.ValidTo;
 
                     return Ok(tokenModel);
                 }
@@ -183,8 +182,7 @@ namespace CoreIdentity.API.Identity.Controllers
                 {
                     HasVerifiedEmail = true,
                     TFAEnabled = false,
-                    Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken),
-                    Expiration = jwtSecurityToken.ValidTo
+                    Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken)
                 };
 
                 return Ok(tokenModel);
