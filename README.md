@@ -23,6 +23,8 @@ This project has everything you need to get started with ASP.NET Core Web API.
 # Getting Started
 To get started locate the `appsettings.Development.json` and supply your connectionString.
 
-That's it.
+To activate emails in the API you can also enter SendGrid (free account through Azure Portal) account credentials.
 
-To activate emails in the API you can also enter SendGrid account credentials.
+Now run the API, register, confirm your email, login and receive JWT, add JWT to Authorize Header for every request after.
+
+
