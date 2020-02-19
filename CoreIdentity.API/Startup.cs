@@ -3,6 +3,8 @@ using CoreIdentity.API.Identity;
 using CoreIdentity.API.Middleware;
 using CoreIdentity.API.Services;
 using CoreIdentity.API.Settings;
+using CoreIdentity.Azure.Storage.Interfaces;
+using CoreIdentity.Azure.Storage.Services;
 using CoreIdentity.Data;
 using CoreIdentity.Data.Interfaces;
 using CoreIdentity.Data.Repos;
@@ -52,6 +54,11 @@ namespace CoreIdentity.API
 
             // Services
             services.AddTransient<IEmailService, EmailService>();
+
+            // Azure
+            // Azure Storage Services
+            services.AddScoped<IBlobStorage>(s => new BlobStorage(Configuration["ConnectionStrings:AzureStorage"], Configuration["AzureStorage:ContainerName"], Configuration["AzureStorage:Url"]));
+            services.AddScoped<IQueueStorage>(s => new QueueStorage(Configuration["ConnectionStrings:AzureStorage"]));
 
             // Data
             services.AddDbContextPool<DataContext>(options => options.UseSqlServer(Configuration["ConnectionStrings:Default"]));
