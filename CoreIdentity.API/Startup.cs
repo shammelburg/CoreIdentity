@@ -75,16 +75,16 @@ namespace CoreIdentity.API
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseErrorHandlingMiddleware();
+
             // Use WhiteList
             // app.UseWhiteListMiddleware(Configuration["AllowedIPs"]);
 
             app.UseRouting();
 
+            app.UseCors("CorsPolicy");
             app.UseAuthentication();
             app.UseAuthorization();
-
-            app.UseCors("CorsPolicy");
-            app.UseErrorHandlingMiddleware();
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
