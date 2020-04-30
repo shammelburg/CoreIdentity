@@ -63,11 +63,11 @@ namespace CoreIdentity.API.Identity.Controllers
                 return BadRequest(new string[] { "Error retrieving information!" });
             }
 
-            var user = await _userManager.FindByIdAsync(model.UserId);
+            var user = await _userManager.FindByIdAsync(model.UserId).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
-            var result = await _userManager.ConfirmEmailAsync(user, model.Code);
+            var result = await _userManager.ConfirmEmailAsync(user, model.Code).ConfigureAwait(false);
             if (result.Succeeded)
                 return Ok(result);
 
@@ -89,14 +89,14 @@ namespace CoreIdentity.API.Identity.Controllers
                 return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
             var user = new IdentityUser { UserName = model.Email, Email = model.Email };
-            var result = await _userManager.CreateAsync(user, model.Password);
+            var result = await _userManager.CreateAsync(user, model.Password).ConfigureAwait(false);
 
             if (result.Succeeded)
             {
-                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user).ConfigureAwait(false);
                 var callbackUrl = $"{_client.Url}{_client.EmailConfirmationPath}?uid={user.Id}&code={System.Net.WebUtility.UrlEncode(code)}";
 
-                await _emailService.SendEmailConfirmationAsync(model.Email, callbackUrl);
+                await _emailService.SendEmailConfirmationAsync(model.Email, callbackUrl).ConfigureAwait(false);
 
                 return Ok();
             }
@@ -115,7 +115,7 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("token")]
         public async Task<IActionResult> CreateToken([FromBody]LoginViewModel model)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _userManager.FindByEmailAsync(model.Email).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Invalid credentials." });
 
@@ -134,7 +134,7 @@ namespace CoreIdentity.API.Identity.Controllers
             if (user.LockoutEnabled)
                 return BadRequest(new string[] { "This account has been locked." });
 
-            if (await _userManager.CheckPasswordAsync(user, model.Password))
+            if (await _userManager.CheckPasswordAsync(user, model.Password).ConfigureAwait(false))
             {
                 tokenModel.HasVerifiedEmail = true;
 
@@ -145,7 +145,7 @@ namespace CoreIdentity.API.Identity.Controllers
                 }
                 else
                 {
-                    JwtSecurityToken jwtSecurityToken = await CreateJwtToken(user);
+                    JwtSecurityToken jwtSecurityToken = await CreateJwtToken(user).ConfigureAwait(false);
                     tokenModel.TFAEnabled = false;
                     tokenModel.Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
 
@@ -170,13 +170,13 @@ namespace CoreIdentity.API.Identity.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _userManager.FindByEmailAsync(model.Email).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Invalid credentials." });
 
-            if (await _userManager.VerifyTwoFactorTokenAsync(user, "Authenticator", model.TwoFactorCode))
+            if (await _userManager.VerifyTwoFactorTokenAsync(user, "Authenticator", model.TwoFactorCode).ConfigureAwait(false))
             {
-                JwtSecurityToken jwtSecurityToken = await CreateJwtToken(user);
+                JwtSecurityToken jwtSecurityToken = await CreateJwtToken(user).ConfigureAwait(false);
 
                 var tokenModel = new TokenModel()
                 {
@@ -204,14 +204,14 @@ namespace CoreIdentity.API.Identity.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
-            var user = await _userManager.FindByEmailAsync(model.Email);
-            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+            var user = await _userManager.FindByEmailAsync(model.Email).ConfigureAwait(false);
+            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user).ConfigureAwait(false)))
                 return BadRequest(new string[] { "Please verify your email address." });
 
-            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user).ConfigureAwait(false);
             var callbackUrl = $"{_client.Url}{_client.ResetPasswordPath}?uid={user.Id}&code={System.Net.WebUtility.UrlEncode(code)}";
 
-            await _emailService.SendPasswordResetAsync(model.Email, callbackUrl);
+            await _emailService.SendPasswordResetAsync(model.Email, callbackUrl).ConfigureAwait(false);
 
             return Ok();
         }
@@ -230,13 +230,13 @@ namespace CoreIdentity.API.Identity.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
-            var user = await _userManager.FindByIdAsync(model.UserId);
+            var user = await _userManager.FindByIdAsync(model.UserId).ConfigureAwait(false);
             if (user == null)
             {
                 // Don't reveal that the user does not exist
                 return BadRequest(new string[] { "Invalid credentials." });
             }
-            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
+            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password).ConfigureAwait(false);
             if (result.Succeeded)
             {
                 return Ok(result);
@@ -254,21 +254,21 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("resendVerificationEmail")]
         public async Task<IActionResult> resendVerificationEmail([FromBody]UserViewModel model)
         {
-            var user = await _userManager.FindByEmailAsync(model.Email);
+            var user = await _userManager.FindByEmailAsync(model.Email).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
-            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user).ConfigureAwait(false);
             var callbackUrl = $"{_client.Url}{_client.EmailConfirmationPath}?uid={user.Id}&code={System.Net.WebUtility.UrlEncode(code)}";
-            await _emailService.SendEmailConfirmationAsync(user.Email, callbackUrl);
+            await _emailService.SendEmailConfirmationAsync(user.Email, callbackUrl).ConfigureAwait(false);
 
             return Ok();
         }
 
         private async Task<JwtSecurityToken> CreateJwtToken(IdentityUser user)
         {
-            var userClaims = await _userManager.GetClaimsAsync(user);
-            var roles = await _userManager.GetRolesAsync(user);
+            var userClaims = await _userManager.GetClaimsAsync(user).ConfigureAwait(false);
+            var roles = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
 
             var roleClaims = new List<Claim>();
 

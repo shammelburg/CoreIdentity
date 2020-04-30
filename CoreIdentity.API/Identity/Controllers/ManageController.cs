@@ -54,14 +54,14 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("userInfo")]
         public async Task<IActionResult> UserInfo()
         {
-            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
+            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value).ConfigureAwait(false);
 
             var userModel = new UserModel
             {
                 Email = user.Email,
                 EmailConfirmed = user.EmailConfirmed,
                 LockoutEnabled = user.LockoutEnabled,
-                Roles = await _userManager.GetRolesAsync(user)
+                Roles = await _userManager.GetRolesAsync(user).ConfigureAwait(false)
             };
 
             return Ok(userModel);
@@ -77,15 +77,15 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("twoFactorAuthentication")]
         public async Task<IActionResult> TwoFactorAuthentication()
         {
-            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
+            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
             var model = new TwoFactorAuthenticationViewModel
             {
-                HasAuthenticator = await _userManager.GetAuthenticatorKeyAsync(user) != null,
+                HasAuthenticator = await _userManager.GetAuthenticatorKeyAsync(user).ConfigureAwait(false) != null,
                 Is2faEnabled = user.TwoFactorEnabled,
-                RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user)
+                RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user).ConfigureAwait(false)
             };
 
             return Ok(model);
@@ -102,12 +102,12 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("enableAuthenticator")]
         public async Task<IActionResult> EnableAuthenticator()
         {
-            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
+            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
             var model = new EnableAuthenticatorViewModel();
-            await LoadSharedKeyAndQrCodeUriAsync(user, model);
+            await LoadSharedKeyAndQrCodeUriAsync(user, model).ConfigureAwait(false);
 
             return Ok(model);
         }
@@ -126,16 +126,16 @@ namespace CoreIdentity.API.Identity.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
-            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
+            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
             var passwordValidator = new PasswordValidator<IdentityUser>();
-            var result = await passwordValidator.ValidateAsync(_userManager, null, model.NewPassword);
+            var result = await passwordValidator.ValidateAsync(_userManager, null, model.NewPassword).ConfigureAwait(false);
 
             if (result.Succeeded)
             {
-                var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+                var changePasswordResult = await _userManager.ChangePasswordAsync(user, model.OldPassword, model.NewPassword).ConfigureAwait(false);
                 if (!changePasswordResult.Succeeded)
                     return BadRequest(new string[] { "Could not change password!" });
 
@@ -157,14 +157,14 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("sendVerificationEmail")]
         public async Task<IActionResult> SendVerificationEmail()
         {
-            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
+            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
-            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user).ConfigureAwait(false);
             var callbackUrl = $"{_client.Url}{_client.EmailConfirmationPath}?uid={user.Id}&code={System.Net.WebUtility.UrlEncode(code)}";
 
-            await _emailService.SendEmailConfirmationAsync(user.Email, callbackUrl);
+            await _emailService.SendEmailConfirmationAsync(user.Email, callbackUrl).ConfigureAwait(false);
 
             return Ok();
         }
@@ -183,11 +183,11 @@ namespace CoreIdentity.API.Identity.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
+            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
-            var addPasswordResult = await _userManager.AddPasswordAsync(user, model.NewPassword);
+            var addPasswordResult = await _userManager.AddPasswordAsync(user, model.NewPassword).ConfigureAwait(false);
 
             if (addPasswordResult.Succeeded)
                 return Ok(addPasswordResult);
@@ -205,11 +205,11 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("disableTfa")]
         public async Task<IActionResult> Disable2fa()
         {
-            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
+            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
-            var disable2faResult = await _userManager.SetTwoFactorEnabledAsync(user, false);
+            var disable2faResult = await _userManager.SetTwoFactorEnabledAsync(user, false).ConfigureAwait(false);
             if (!disable2faResult.Succeeded)
                 return BadRequest(disable2faResult.Errors.Select(x => x.Description));
 
@@ -227,13 +227,13 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("enableAuthenticator")]
         public async Task<IActionResult> EnableAuthenticator([FromBody]EnableAuthenticatorViewModel model)
         {
-            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
+            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
             if (!ModelState.IsValid)
             {
-                await LoadSharedKeyAndQrCodeUriAsync(user, model);
+                await LoadSharedKeyAndQrCodeUriAsync(user, model).ConfigureAwait(false);
                 return Ok(model);
             }
 
@@ -241,17 +241,17 @@ namespace CoreIdentity.API.Identity.Controllers
             var verificationCode = model.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
 
             var is2faTokenValid = await _userManager.VerifyTwoFactorTokenAsync(
-                user, _userManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode);
+                user, _userManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode).ConfigureAwait(false);
 
             if (!is2faTokenValid)
             {
                 ModelState.AddModelError("Code", "Verification code is invalid.");
-                await LoadSharedKeyAndQrCodeUriAsync(user, model);
+                await LoadSharedKeyAndQrCodeUriAsync(user, model).ConfigureAwait(false);
                 return View(model);
             }
 
-            await _userManager.SetTwoFactorEnabledAsync(user, true);
-            var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+            await _userManager.SetTwoFactorEnabledAsync(user, true).ConfigureAwait(false);
+            var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10).ConfigureAwait(false);
 
             return Ok(recoveryCodes.ToArray());
         }
@@ -279,12 +279,12 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("resetAuthenticator")]
         public async Task<IActionResult> ResetAuthenticator()
         {
-            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
+            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
-            await _userManager.SetTwoFactorEnabledAsync(user, false);
-            await _userManager.ResetAuthenticatorKeyAsync(user);
+            await _userManager.SetTwoFactorEnabledAsync(user, false).ConfigureAwait(false);
+            await _userManager.ResetAuthenticatorKeyAsync(user).ConfigureAwait(false);
             
             return Ok();
         }
@@ -299,14 +299,14 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("generateRecoveryCodes")]
         public async Task<IActionResult> GenerateRecoveryCodes()
         {
-            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value);
+            var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
             if (!user.TwoFactorEnabled)
                 return BadRequest(new string[] { $"Cannot generate recovery codes for user with ID '{user.Id}' as they do not have 2FA enabled." });
 
-            var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+            var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10).ConfigureAwait(false);
 
             var model = new ShowRecoveryCodesViewModel { RecoveryCodes = recoveryCodes.ToArray() };
 
@@ -341,11 +341,11 @@ namespace CoreIdentity.API.Identity.Controllers
 
         private async Task LoadSharedKeyAndQrCodeUriAsync(IdentityUser user, EnableAuthenticatorViewModel model)
         {
-            var unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user);
+            var unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user).ConfigureAwait(false);
             if (string.IsNullOrEmpty(unformattedKey))
             {
-                await _userManager.ResetAuthenticatorKeyAsync(user);
-                unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user);
+                await _userManager.ResetAuthenticatorKeyAsync(user).ConfigureAwait(false);
+                unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user).ConfigureAwait(false);
             }
 
             model.SharedKey = FormatKey(unformattedKey);
