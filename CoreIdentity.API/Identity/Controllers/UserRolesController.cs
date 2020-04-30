@@ -34,8 +34,8 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("get/{Id}")]
         public async Task<IActionResult> Get(string Id)
         {
-            IdentityUser user = await _userManager.FindByIdAsync(Id);
-            return Ok(await _userManager.GetRolesAsync(user));
+            IdentityUser user = await _userManager.FindByIdAsync(Id).ConfigureAwait(false);
+            return Ok(await _userManager.GetRolesAsync(user).ConfigureAwait(false));
         }
 
         /// <summary>
@@ -52,18 +52,18 @@ namespace CoreIdentity.API.Identity.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
-            IdentityUser user = await _userManager.FindByIdAsync(model.Id);
+            IdentityUser user = await _userManager.FindByIdAsync(model.Id).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
-            IdentityRole role = await _roleManager.FindByIdAsync(model.ApplicationRoleId);
+            IdentityRole role = await _roleManager.FindByIdAsync(model.RoleId).ConfigureAwait(false);
             if (role == null)
                 return BadRequest(new string[] { "Could not find role!" });
 
-            IdentityResult result = await _userManager.AddToRoleAsync(user, role.Name);
+            IdentityResult result = await _userManager.AddToRoleAsync(user, role.Name).ConfigureAwait(false);
             if (result.Succeeded)
             {
-                return Ok(result);
+                return Ok(role.Name);
             }
             return BadRequest(result.Errors.Select(x => x.Description));
         }
@@ -83,18 +83,18 @@ namespace CoreIdentity.API.Identity.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
-            IdentityUser user = await _userManager.FindByIdAsync(Id);
+            IdentityUser user = await _userManager.FindByIdAsync(Id).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
-            IdentityRole role = await _roleManager.FindByIdAsync(RoleId);
+            IdentityRole role = await _roleManager.FindByIdAsync(RoleId).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find role!" });
 
-            IdentityResult result = await _userManager.RemoveFromRoleAsync(user, role.Name);
+            IdentityResult result = await _userManager.RemoveFromRoleAsync(user, role.Name).ConfigureAwait(false);
             if (result.Succeeded)
             {
-                return Ok(result);
+                return Ok();
             }
             return BadRequest(result.Errors.Select(x => x.Description));
         }

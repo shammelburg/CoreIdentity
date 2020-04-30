@@ -33,7 +33,16 @@ namespace CoreIdentity.API.Identity.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<IdentityUser>), 200)]
         [Route("get")]
-        public IActionResult Get() => Ok(_userManager.Users);
+        public IActionResult Get() => Ok(
+            _userManager.Users.Select(user => new
+            {
+                user.Id,
+                user.Email,
+                user.PhoneNumber,
+                user.EmailConfirmed,
+                user.LockoutEnabled,
+                user.TwoFactorEnabled
+            }));
 
         /// <summary>
         /// Get a user
@@ -49,7 +58,17 @@ namespace CoreIdentity.API.Identity.Controllers
             if (String.IsNullOrEmpty(Id))
                 return BadRequest(new string[] { "Empty parameter!" });
 
-            return Ok(_userManager.Users.Where(user => user.Id == Id));
+            return Ok(_userManager.Users
+                .Where(user => user.Id == Id)
+                .Select(user => new
+                {
+                    user.Id,
+                    user.Email,
+                    user.PhoneNumber,
+                    user.EmailConfirmed,
+                    user.LockoutEnabled,
+                    user.TwoFactorEnabled
+                }));
         }
 
         /// <summary>
@@ -68,23 +87,31 @@ namespace CoreIdentity.API.Identity.Controllers
 
             IdentityUser user = new IdentityUser
             {
-                UserName = model.UserName,
+                UserName = model.Email,
                 Email = model.Email,
                 EmailConfirmed = model.EmailConfirmed,
                 PhoneNumber = model.PhoneNumber
             };
 
-            IdentityRole role = await _roleManager.FindByIdAsync(model.ApplicationRoleId);
+            IdentityRole role = await _roleManager.FindByIdAsync(model.RoleId).ConfigureAwait(false);
             if (role == null)
                 return BadRequest(new string[] { "Could not find role!" });
 
-            IdentityResult result = await _userManager.CreateAsync(user, model.Password);
+            IdentityResult result = await _userManager.CreateAsync(user, model.Password).ConfigureAwait(false);
             if (result.Succeeded)
             {
-                IdentityResult result2 = await _userManager.AddToRoleAsync(user, role.Name);
+                IdentityResult result2 = await _userManager.AddToRoleAsync(user, role.Name).ConfigureAwait(false);
                 if (result2.Succeeded)
                 {
-                    return Ok(result2);
+                    return Ok(new
+                    {
+                        user.Id,
+                        user.Email,
+                        user.PhoneNumber,
+                        user.EmailConfirmed,
+                        user.LockoutEnabled,
+                        user.TwoFactorEnabled
+                    });
                 }
             }
             return BadRequest(result.Errors.Select(x => x.Description));
@@ -105,7 +132,7 @@ namespace CoreIdentity.API.Identity.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
-            IdentityUser user = await _userManager.FindByIdAsync(Id);
+            IdentityUser user = await _userManager.FindByIdAsync(Id).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
@@ -117,10 +144,10 @@ namespace CoreIdentity.API.Identity.Controllers
             user.LockoutEnabled = model.LockoutEnabled;
             user.TwoFactorEnabled = model.TwoFactorEnabled;
 
-            IdentityResult result = await _userManager.UpdateAsync(user);
+            IdentityResult result = await _userManager.UpdateAsync(user).ConfigureAwait(false);
             if (result.Succeeded)
             {
-                return Ok(result);
+                return Ok();
             }
             return BadRequest(result.Errors.Select(x => x.Description));
         }
@@ -139,14 +166,14 @@ namespace CoreIdentity.API.Identity.Controllers
             if (!String.IsNullOrEmpty(Id))
                 return BadRequest(new string[] { "Empty parameter!" });
 
-            IdentityUser user = await _userManager.FindByIdAsync(Id);
+            IdentityUser user = await _userManager.FindByIdAsync(Id).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
 
-            IdentityResult result = await _userManager.DeleteAsync(user);
+            IdentityResult result = await _userManager.DeleteAsync(user).ConfigureAwait(false);
             if (result.Succeeded)
             {
-                return Ok(result);
+                return Ok();
             }
             return BadRequest(result.Errors.Select(x => x.Description));
         }
