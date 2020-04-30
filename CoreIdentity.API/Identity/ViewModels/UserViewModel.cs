@@ -13,7 +13,6 @@ namespace CoreIdentity.API.Identity.ViewModels
         public string ConfirmPassword { get; set; }
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
-        public string ApplicationRoleId { get; set; }
         public string UserId { get; set; }
         public string RoleId { get; set; }
         public string PhoneNumber { get; set; }
