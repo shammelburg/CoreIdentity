@@ -68,7 +68,8 @@ namespace CoreIdentity.API.Identity.Controllers
                     user.EmailConfirmed,
                     user.LockoutEnabled,
                     user.TwoFactorEnabled
-                }));
+                })
+                .FirstOrDefault());
         }
 
         /// <summary>
@@ -163,7 +164,7 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("delete/{Id}")]
         public async Task<IActionResult> Delete(string Id)
         {
-            if (!String.IsNullOrEmpty(Id))
+            if (String.IsNullOrEmpty(Id))
                 return BadRequest(new string[] { "Empty parameter!" });
 
             IdentityUser user = await _userManager.FindByIdAsync(Id).ConfigureAwait(false);
