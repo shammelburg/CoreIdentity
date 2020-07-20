@@ -11,10 +11,11 @@ using CoreIdentity.API.Settings;
 using Microsoft.Extensions.Options;
 using CoreIdentity.API.Identity.Models;
 using System.Collections.Generic;
+using System;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/manage")]
     public class ManageController : Controller
@@ -123,6 +124,9 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("changePassword")]
         public async Task<IActionResult> ChangePassword([FromBody]ChangePasswordViewModel model)
         {
+            if (model == null)
+                return BadRequest(new string[] { "No data in model!" });
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
@@ -180,6 +184,9 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("setPassword")]
         public async Task<IActionResult> SetPassword([FromBody]SetPasswordViewModel model)
         {
+            if (model == null)
+                return BadRequest(new string[] { "No data in model!" });
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -227,6 +234,9 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("enableAuthenticator")]
         public async Task<IActionResult> EnableAuthenticator([FromBody]EnableAuthenticatorViewModel model)
         {
+            if (model == null)
+                return BadRequest(new string[] { "No data in model!" });
+
             var user = await _userManager.FindByIdAsync(User.FindFirst("uid")?.Value).ConfigureAwait(false);
             if (user == null)
                 return BadRequest(new string[] { "Could not find user!" });
@@ -238,7 +248,7 @@ namespace CoreIdentity.API.Identity.Controllers
             }
 
             // Strip spaces and hypens
-            var verificationCode = model.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
+            var verificationCode = model.Code.Replace(" ", string.Empty, StringComparison.CurrentCultureIgnoreCase).Replace("-", string.Empty, StringComparison.CurrentCultureIgnoreCase);
 
             var is2faTokenValid = await _userManager.VerifyTwoFactorTokenAsync(
                 user, _userManager.Options.Tokens.AuthenticatorTokenProvider, verificationCode).ConfigureAwait(false);
@@ -285,7 +295,7 @@ namespace CoreIdentity.API.Identity.Controllers
 
             await _userManager.SetTwoFactorEnabledAsync(user, false).ConfigureAwait(false);
             await _userManager.ResetAuthenticatorKeyAsync(user).ConfigureAwait(false);
-            
+
             return Ok();
         }
 

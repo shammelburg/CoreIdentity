@@ -8,6 +8,7 @@ using System.Collections.Generic;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/userRoles")]
     public class UserRolesController : Controller
@@ -49,6 +50,9 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("add")]
         public async Task<IActionResult> Post([FromBody]UserViewModel model)
         {
+            if (model == null)
+                return BadRequest(new string[] { "No data in model!" });
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 

@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/role")]
     public class RoleController : Controller
@@ -47,6 +47,9 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("insert")]
         public async Task<IActionResult> Post([FromBody]RoleViewModel model)
         {
+            if (model == null)
+                return BadRequest(new string[] { "No data in model!" });
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
@@ -76,6 +79,9 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("update/{Id}")]
         public async Task<IActionResult> Put(string Id, [FromBody]RoleViewModel model)
         {
+            if (model == null)
+                return BadRequest(new string[] { "No data in model!" });
+
             IdentityRole identityRole = await _roleManager.FindByIdAsync(Id).ConfigureAwait(false);
 
             identityRole.Name = model.Name;
