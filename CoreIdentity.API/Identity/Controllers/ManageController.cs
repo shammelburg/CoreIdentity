@@ -14,7 +14,7 @@ using System.Collections.Generic;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/manage")]
     public class ManageController : Controller

@@ -9,7 +9,7 @@ using System.Collections.Generic;
 
 namespace CoreIdentity.API.Identity.Controllers
 {
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Bearer")]
     [Produces("application/json")]
     [Route("api/user")]
     public class UserController : Controller
