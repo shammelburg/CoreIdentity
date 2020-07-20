@@ -83,6 +83,9 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("insertWithRole")]
         public async Task<IActionResult> Post([FromBody]UserViewModel model)
         {
+            if (model == null)
+                return BadRequest(new string[] { "No data in model!" });
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
@@ -130,6 +133,9 @@ namespace CoreIdentity.API.Identity.Controllers
         [Route("update/{Id}")]
         public async Task<IActionResult> Put(string Id, [FromBody]EditUserViewModel model)
         {
+            if (model == null)
+                return BadRequest(new string[] { "No data in model!" });
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState.Values.Select(x => x.Errors.FirstOrDefault().ErrorMessage));
 
