@@ -2,14 +2,15 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 using System;
-using System.Net;
-using System.Net.Mail;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace CoreIdentity.API.Services
 {
-    public class EmailService: IEmailService
+    public class EmailService : IEmailService
     {
         private readonly EmailSettings _email;
         private readonly IWebHostEnvironment _env;
@@ -23,96 +24,47 @@ namespace CoreIdentity.API.Services
 
         public async Task SendAsync(string EmailDisplayName, string Subject, string Body, string From, string To)
         {
-            using (var client = new SmtpClient(_email.SMTPServer, _email.Port))
-            using (var mailMessage = new MailMessage())
-            {
-                if (!_email.DefaultCredentials)
-                {
-                    client.UseDefaultCredentials = false;
-                    client.Credentials = new NetworkCredential(_email.UserName, _email.Password);
-                }
-
-                PrepareMailMessage(EmailDisplayName, Subject, Body, From, To, mailMessage);
-
-                await client.SendMailAsync(mailMessage);
-            }
+            await SendSendGridMessage(From, EmailDisplayName, new List<EmailAddress> { new EmailAddress(To) }, Subject, Body).ConfigureAwait(false);
         }
 
         public async Task SendEmailConfirmationAsync(string EmailAddress, string CallbackUrl)
         {
-            using (var client = new SmtpClient(_email.SMTPServer, _email.Port))
-            using (var mailMessage = new MailMessage())
-            {
-                if (!_email.DefaultCredentials)
-                {
-                    client.UseDefaultCredentials = false;
-                    client.Credentials = new NetworkCredential(_email.UserName, _email.Password);
-                }
+            var Subject = "Confirm your email";
+            var HTMLContent = $"Please confirm your email by clicking here: <a href='{CallbackUrl}'>link</a>";
 
-                PrepareMailMessage(_email.DisplayName, "Confirm your email", $"Please confirm your email by clicking here: <a href='{CallbackUrl}'>link</a>", _email.From, EmailAddress, mailMessage);
-
-                await client.SendMailAsync(mailMessage);
-            }
+            await SendSendGridMessage(_email.From, _email.DisplayName, new List<EmailAddress> { new EmailAddress(EmailAddress) }, Subject, HTMLContent).ConfigureAwait(false);
         }
 
         public async Task SendPasswordResetAsync(string EmailAddress, string CallbackUrl)
         {
-            using (var client = new SmtpClient(_email.SMTPServer, _email.Port))
-            using (var mailMessage = new MailMessage())
-            {
-                if (!_email.DefaultCredentials)
-                {
-                    client.UseDefaultCredentials = false;
-                    client.Credentials = new NetworkCredential(_email.UserName, _email.Password);
-                }
+            var Subject = "Reset your password";
+            var HTMLContent = $"Please reset your password by clicking here: <a href='{CallbackUrl}'>link</a>";
 
-                PrepareMailMessage(_email.DisplayName, "Reset your password", $"Please reset your password by clicking here: <a href='{CallbackUrl}'>link</a>", _email.From, EmailAddress, mailMessage);
-
-                await client.SendMailAsync(mailMessage);
-            }
+            await SendSendGridMessage(_email.From, _email.DisplayName, new List<EmailAddress> { new EmailAddress(EmailAddress) }, Subject, HTMLContent).ConfigureAwait(false);
         }
 
         public async Task SendException(Exception ex)
         {
-            using (var client = new SmtpClient(_email.SMTPServer, _email.Port))
-            using (var mailMessage = new MailMessage())
-            {
-                if (!_email.DefaultCredentials)
-                {
-                    client.UseDefaultCredentials = false;
-                    client.Credentials = new NetworkCredential(_email.UserName, _email.Password);
-                }
+            var Subject = $"[{_env.EnvironmentName}] INTERNAL SERVER ERROR";
+            var HTMLContent = $"{ex.ToString()}";
 
-                PrepareMailMessage(_email.DisplayName, $"({_env.EnvironmentName}) INTERNAL SERVER ERROR", $"{ex.ToString()}", _email.From, _email.To, mailMessage);
-
-                await client.SendMailAsync(mailMessage);
-            }
+            await SendSendGridMessage(_email.From, _email.DisplayName, new List<EmailAddress> { new EmailAddress(_email.To) }, Subject, HTMLContent).ConfigureAwait(false);
         }
 
         public async Task SendSqlException(SqlException ex)
         {
-            using (var client = new SmtpClient(_email.SMTPServer, _email.Port))
-            using (var mailMessage = new MailMessage())
-            {
-                if (!_email.DefaultCredentials)
-                {
-                    client.UseDefaultCredentials = false;
-                    client.Credentials = new NetworkCredential(_email.UserName, _email.Password);
-                }
+            var Subject = $"[{_env.EnvironmentName}] SQL ERROR";
+            var HTMLContent = $"{ex.ToString()}";
 
-                PrepareMailMessage(_email.DisplayName, $"({_env.EnvironmentName}) SQL ERROR", $"{ex.ToString()}", _email.From, _email.To, mailMessage);
-
-                await client.SendMailAsync(mailMessage);
-            }
+            await SendSendGridMessage(_email.From, _email.DisplayName, new List<EmailAddress> { new EmailAddress(_email.To) }, Subject, HTMLContent).ConfigureAwait(false);
         }
 
-        private void PrepareMailMessage(string EmailDisplayName, string Subject, string Body, string From, string To, MailMessage mailMessage)
+        private async Task SendSendGridMessage(string From, string EmailDisplayName, List<EmailAddress> tos, string Subject, string HTMLContent)
         {
-            mailMessage.From = new MailAddress(From, EmailDisplayName);
-            mailMessage.To.Add(To);
-            mailMessage.Body = Body;
-            mailMessage.IsBodyHtml = true;
-            mailMessage.Subject = Subject;
+            var client = new SendGridClient(_email.SendGridApiKey);
+            var from = new EmailAddress(From, EmailDisplayName);
+            var msg = MailHelper.CreateSingleEmailToMultipleRecipients(from, tos, Subject, "", HTMLContent, false);
+            var response = await client.SendEmailAsync(msg).ConfigureAwait(false);
         }
     }
 }
