@@ -1,3 +1,5 @@
+*This repo will soon branch off and start moving towards ASP.NET Core 5*
+
 # CoreIdentity
 Using ASP.NET Core Identity Web API With JWT, TFA, Swagger, Sendgrid, EF Core and Azure Storage
 
